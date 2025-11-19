@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   // apiVersion removido - usa latest
 });
-
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 export async function POST(request: NextRequest) {

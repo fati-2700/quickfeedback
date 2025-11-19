@@ -229,6 +229,19 @@
   const messageDiv = document.createElement('div');
   messageDiv.id = 'feedback-widget-message';
 
+  // Check for data-pro attribute to hide branding
+  const scriptTag = document.querySelector('script[src*="widget.js"]');
+  const isPro = scriptTag && scriptTag.getAttribute('data-pro') === 'true';
+
+  // Branding text (only show if not pro)
+  let brandingDiv = null;
+  if (!isPro) {
+    brandingDiv = document.createElement('div');
+    brandingDiv.id = 'feedback-widget-branding';
+    brandingDiv.textContent = 'Powered by QuickFeedback';
+    brandingDiv.style.cssText = 'text-align: center; margin-top: 16px; font-size: 12px; color: #9ca3af;';
+  }
+
   form.appendChild(title);
   form.appendChild(nameLabel);
   form.appendChild(nameInput);
@@ -238,6 +251,9 @@
   form.appendChild(messageTextarea);
   form.appendChild(submitButton);
   form.appendChild(messageDiv);
+  if (brandingDiv) {
+    form.appendChild(brandingDiv);
+  }
 
   modalContent.appendChild(closeButton);
   modalContent.appendChild(form);

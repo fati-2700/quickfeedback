@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase-server';
+import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Simple Supabase client for reading (no auth needed)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export async function GET() {
   try {
-    const supabase = createServerClient();
     const { data, error } = await supabase
       .from('feedback')
       .select('*')
@@ -51,7 +56,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert feedback into Supabase
-    const supabase = createServerClient();
     const { data, error } = await supabase
       .from('feedback')
       .insert([
@@ -80,9 +84,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send email notifications (don't fail the request if email fails)
+    // Send email notifications
     try {
-      // Send confirmation email to the person who submitted feedback
       await resend.emails.send({
         from: 'QuickFeedback <onboarding@resend.dev>',
         to: email,
@@ -109,7 +112,6 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Send notification email to site owner
       await resend.emails.send({
         from: 'QuickFeedback <onboarding@resend.dev>',
         to: 'fatitalo84@gmail.com',
@@ -130,10 +132,9 @@ export async function POST(request: NextRequest) {
         `,
       });
     } catch (emailError) {
-      console.error('Error sending notification email to owner:', emailError);
+      console.error('Error sending notification email:', emailError);
     }
 
-    // Return success response with inserted data
     return NextResponse.json(
       { success: true, message: 'Feedback submitted successfully', data },
       {
@@ -161,7 +162,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle OPTIONS request for CORS preflight
 export async function OPTIONS() {
   return NextResponse.json(
     {},
@@ -169,7 +169,7 @@ export async function OPTIONS() {
       status: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
       },
     }

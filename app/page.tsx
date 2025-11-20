@@ -13,10 +13,10 @@ export default function Home() {
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
               <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">Dashboard</Link>
+              <Link href="/auth" className="text-gray-600 hover:text-gray-900 transition-colors">Dashboard</Link>
             </div>
             <Link
-              href="/dashboard"
+              href="/auth"
               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
             >
               Get Started Free
@@ -38,7 +38,7 @@ export default function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/dashboard"
+                  href="/auth"
                   className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all hover:scale-105 shadow-lg"
                 >
                   Start Free
@@ -285,7 +285,7 @@ export default function Home() {
                 </li>
               </ul>
               <Link
-                href="/dashboard"
+                href="/auth"
                 className="block w-full text-center px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
               >
                 Start Free
@@ -339,7 +339,7 @@ export default function Home() {
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to get started?</h2>
           <p className="text-xl text-blue-100 mb-8">Join thousands of websites using QuickFeedback</p>
           <Link
-            href="/dashboard"
+            href="/auth"
             className="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg"
           >
             Start Free
@@ -355,7 +355,7 @@ export default function Home() {
               <p className="text-sm">© 2025 QuickFeedback. All rights reserved.</p>
             </div>
             <div className="flex space-x-6">
-              <Link href="/dashboard" className="text-sm hover:text-white transition-colors">
+              <Link href="/auth" className="text-sm hover:text-white transition-colors">
                 Dashboard
               </Link>
               <a href="#" className="text-sm hover:text-white transition-colors">

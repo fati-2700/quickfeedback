@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createServerClient } from '@/lib/supabase-server';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function GET() {
   try {
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from('feedback')
       .select('*')
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert feedback into Supabase
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from('feedback')
       .insert([

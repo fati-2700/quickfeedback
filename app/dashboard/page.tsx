@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface Feedback {
   id: string;
@@ -19,6 +22,7 @@ interface User {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,8 +30,7 @@ export default function DashboardPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [userLoading, setUserLoading] = useState(true);
-  const [emailInput, setEmailInput] = useState('');
-  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
   const embedCode = '<script src="https://quickfeedback.co/widget.js"></script>';
 
   const fetchFeedback = async () => {
@@ -48,66 +51,70 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    fetchFeedback();
-    checkUser();
+    checkAuth();
   }, []);
 
-  const checkUser = async () => {
+  const checkAuth = async () => {
     try {
       setUserLoading(true);
-      const savedEmail = localStorage.getItem('userEmail');
-      
-      if (!savedEmail) {
-        setUserLoading(false);
-        setShowEmailInput(true);
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error('Error getting session:', sessionError);
+        router.push('/auth');
         return;
       }
 
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: savedEmail }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.user) {
-          setUser(data.user);
-        }
+      if (!sessionData.session) {
+        router.push('/auth');
+        return;
       }
+
+      const sessionUser = sessionData.session.user;
+      setAuthUser(sessionUser);
+
+      // Fetch user plan from database
+      if (sessionUser.email) {
+        await fetchUserPlan(sessionUser.email);
+      }
+
+      // Fetch feedback
+      await fetchFeedback();
     } catch (err) {
-      console.error('Error checking user:', err);
+      console.error('Error checking auth:', err);
+      router.push('/auth');
     } finally {
       setUserLoading(false);
     }
   };
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!emailInput.trim()) return;
-
+  const fetchUserPlan = async (email: string) => {
     try {
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: emailInput.trim() }),
+        body: JSON.stringify({ email }),
       });
 
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.user) {
           setUser(data.user);
-          localStorage.setItem('userEmail', data.user.email);
-          setShowEmailInput(false);
-          setEmailInput('');
         }
       }
     } catch (err) {
-      console.error('Error creating user:', err);
+      console.error('Error fetching user plan:', err);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push('/');
+    } catch (err) {
+      console.error('Error signing out:', err);
     }
   };
 
@@ -160,6 +167,22 @@ export default function DashboardPage() {
     });
   };
 
+  // Show loading state while checking auth
+  if (userLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-gray-500">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (redirect should happen, but just in case)
+  if (!authUser) {
+    return null;
+  }
+
   return (
     <div className="p-10 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -167,43 +190,37 @@ export default function DashboardPage() {
         <div className="flex items-center gap-4">
           {userLoading ? (
             <div className="text-sm text-gray-500">Loading...</div>
-          ) : user ? (
+          ) : authUser ? (
             <>
-              <div className="text-sm">
-                <span className="text-gray-600">Plan: </span>
-                <span className={`font-semibold ${user.plan === 'pro' ? 'text-purple-600' : 'text-gray-800'}`}>
-                  {user.plan === 'pro' ? 'Pro' : 'Free'}
-                </span>
+              <div className="text-sm text-gray-600">
+                {authUser.email}
               </div>
-              {user.plan === 'free' && (
-                <button
-                  onClick={handleUpgrade}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-semibold"
-                >
-                  Upgrade to Pro - €9/month
-                </button>
+              {user && (
+                <>
+                  <div className="text-sm">
+                    <span className="text-gray-600">Plan: </span>
+                    <span className={`font-semibold ${user.plan === 'pro' ? 'text-purple-600' : 'text-gray-800'}`}>
+                      {user.plan === 'pro' ? 'Pro' : 'Free'}
+                    </span>
+                  </div>
+                  {user.plan === 'free' && (
+                    <button
+                      onClick={handleUpgrade}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-semibold"
+                    >
+                      Upgrade to Pro - €9/month
+                    </button>
+                  )}
+                </>
               )}
+              <button
+                onClick={handleSignOut}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm font-semibold"
+              >
+                Sign Out
+              </button>
             </>
-          ) : (
-            showEmailInput && (
-              <form onSubmit={handleEmailSubmit} className="flex items-center gap-2">
-                <input
-                  type="email"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="Enter your email"
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-semibold"
-                >
-                  Sign In
-                </button>
-              </form>
-            )
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -328,4 +345,6 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { supabase } from '@/lib/supabase';
+import { createServerClient } from '@/lib/supabase-server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   // apiVersion removido - usa latest
@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Update user status to 'pro' in users table
+      const supabase = createServerClient();
       const { error: updateError } = await supabase
         .from('users')
         .update({ plan: 'pro' })

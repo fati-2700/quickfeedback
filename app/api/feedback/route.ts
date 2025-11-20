@@ -4,15 +4,22 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Simple Supabase client for reading (no auth needed)
-const supabase = createClient(
+// Supabase client for reading feedback (using service role key, no auth needed)
+const supabaseRead = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+// Simple Supabase client for writing (using anon key for public submissions)
+const supabaseWrite = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export async function GET() {
   try {
-    const { data, error } = await supabase
+    // No auth/cookie checking - public endpoint
+    const { data, error } = await supabaseRead
       .from('feedback')
       .select('*')
       .order('created_at', { ascending: false });
@@ -55,8 +62,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert feedback into Supabase
-    const { data, error } = await supabase
+    // Insert feedback into Supabase (using anon key for public widget submissions)
+    const { data, error } = await supabaseWrite
       .from('feedback')
       .insert([
         {

@@ -6,30 +6,51 @@
 
   // Create widget styles
   const widgetStyles = `
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+      }
+      50% {
+        box-shadow: 0 4px 30px rgba(79, 70, 229, 0.6);
+      }
+    }
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
     #feedback-widget-button {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background-color: #3b82f6;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 12px 24px;
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 24px;
       cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
       z-index: 10000;
-      transition: all 0.2s ease;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      animation: pulse 3s ease-in-out infinite;
+      font-family: system-ui, -apple-system, sans-serif;
     }
     #feedback-widget-button:hover {
-      background-color: #2563eb;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1);
+      transform: scale(1.1);
+      box-shadow: 0 6px 30px rgba(79, 70, 229, 0.6);
     }
     #feedback-widget-button:active {
-      transform: translateY(0);
+      transform: scale(1.05);
     }
     #feedback-widget-modal {
       position: fixed;
@@ -38,34 +59,26 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 10001;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     #feedback-widget-modal.active {
       display: flex;
     }
     #feedback-widget-modal-content {
       background-color: white;
-      border-radius: 12px;
-      padding: 32px;
+      border-radius: 16px;
+      padding: 0;
       width: 90%;
-      max-width: 500px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      max-width: 450px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       position: relative;
-      animation: slideIn 0.3s ease;
-    }
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      animation: modalFadeIn 0.2s ease-out;
+      overflow: hidden;
     }
     #feedback-widget-close {
       position: absolute;
@@ -75,24 +88,38 @@
       border: none;
       font-size: 24px;
       cursor: pointer;
-      color: #6b7280;
+      color: #6B7280;
       width: 32px;
       height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 4px;
+      border-radius: 6px;
       transition: all 0.2s ease;
+      z-index: 10;
     }
     #feedback-widget-close:hover {
-      background-color: #f3f4f6;
-      color: #1f2937;
+      background-color: #F3F4F6;
+      color: #1F2937;
     }
-    #feedback-widget-form h2 {
-      margin: 0 0 24px 0;
-      font-size: 24px;
+    #feedback-widget-form {
+      padding: 32px;
+    }
+    #feedback-widget-header {
+      margin-bottom: 24px;
+    }
+    #feedback-widget-title {
+      font-size: 28px;
       font-weight: 700;
-      color: #1f2937;
+      color: #111827;
+      margin: 0 0 8px 0;
+      line-height: 1.2;
+    }
+    #feedback-widget-subtitle {
+      font-size: 16px;
+      color: #6B7280;
+      margin: 0;
+      font-weight: 400;
     }
     #feedback-widget-form label {
       display: block;
@@ -105,61 +132,83 @@
     #feedback-widget-form textarea {
       width: 100%;
       padding: 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
+      border: 2px solid #E5E7EB;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: system-ui, -apple-system, sans-serif;
       margin-bottom: 20px;
       box-sizing: border-box;
-      transition: border-color 0.2s ease;
+      transition: all 0.2s ease;
+      background-color: white;
     }
     #feedback-widget-form input:focus,
     #feedback-widget-form textarea:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: #4F46E5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
     }
     #feedback-widget-form textarea {
       resize: vertical;
       min-height: 120px;
+      font-family: system-ui, -apple-system, sans-serif;
     }
     #feedback-widget-submit {
       width: 100%;
-      background-color: #3b82f6;
+      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
       color: white;
       border: none;
-      border-radius: 6px;
-      padding: 12px 24px;
+      border-radius: 8px;
+      padding: 14px;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition: all 0.2s ease;
+      font-family: system-ui, -apple-system, sans-serif;
     }
-    #feedback-widget-submit:hover {
-      background-color: #2563eb;
+    #feedback-widget-submit:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: scale(1.02);
     }
     #feedback-widget-submit:disabled {
-      background-color: #9ca3af;
+      background: #9CA3AF;
+      opacity: 0.5;
       cursor: not-allowed;
+      transform: none;
     }
     #feedback-widget-message {
       margin-top: 16px;
-      padding: 12px;
-      border-radius: 6px;
+      padding: 12px 16px;
+      border-radius: 8px;
       font-size: 14px;
       display: none;
+      font-weight: 500;
     }
     #feedback-widget-message.success {
-      background-color: #d1fae5;
-      color: #065f46;
-      border: 1px solid #a7f3d0;
-      display: block;
+      background-color: #10B981;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     #feedback-widget-message.error {
-      background-color: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fca5a5;
+      background-color: #EF4444;
+      color: white;
       display: block;
+    }
+    #feedback-widget-branding {
+      text-align: center;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #E5E7EB;
+    }
+    #feedback-widget-branding a {
+      font-size: 12px;
+      color: #6B7280;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    #feedback-widget-branding a:hover {
+      color: #4F46E5;
     }
   `;
 
@@ -168,10 +217,15 @@
   styleSheet.textContent = widgetStyles;
   document.head.appendChild(styleSheet);
 
-  // Create button
+  // Check for data-pro attribute to hide branding
+  const scriptTag = document.querySelector('script[src*="widget.js"]');
+  const isPro = scriptTag && scriptTag.getAttribute('data-pro') === 'true';
+
+  // Create floating button
   const button = document.createElement('button');
   button.id = 'feedback-widget-button';
-  button.textContent = 'Feedback';
+  button.innerHTML = '💬';
+  button.setAttribute('aria-label', 'Open feedback form');
   document.body.appendChild(button);
 
   // Create modal
@@ -183,15 +237,28 @@
 
   const closeButton = document.createElement('button');
   closeButton.id = 'feedback-widget-close';
-  closeButton.innerHTML = '&times;';
+  closeButton.innerHTML = '×';
   closeButton.setAttribute('aria-label', 'Close');
 
   const form = document.createElement('form');
   form.id = 'feedback-widget-form';
 
-  const title = document.createElement('h2');
-  title.textContent = 'Send Feedback';
+  // Header
+  const header = document.createElement('div');
+  header.id = 'feedback-widget-header';
 
+  const title = document.createElement('h2');
+  title.id = 'feedback-widget-title';
+  title.textContent = 'Share Your Feedback';
+
+  const subtitle = document.createElement('p');
+  subtitle.id = 'feedback-widget-subtitle';
+  subtitle.textContent = "We'd love to hear from you";
+
+  header.appendChild(title);
+  header.appendChild(subtitle);
+
+  // Form fields
   const nameLabel = document.createElement('label');
   nameLabel.textContent = 'Name';
   nameLabel.setAttribute('for', 'feedback-name');
@@ -200,6 +267,7 @@
   nameInput.type = 'text';
   nameInput.id = 'feedback-name';
   nameInput.name = 'name';
+  nameInput.placeholder = 'Your name';
   nameInput.required = true;
 
   const emailLabel = document.createElement('label');
@@ -210,6 +278,7 @@
   emailInput.type = 'email';
   emailInput.id = 'feedback-email';
   emailInput.name = 'email';
+  emailInput.placeholder = 'your@email.com';
   emailInput.required = true;
 
   const messageLabel = document.createElement('label');
@@ -219,6 +288,7 @@
   const messageTextarea = document.createElement('textarea');
   messageTextarea.id = 'feedback-message';
   messageTextarea.name = 'message';
+  messageTextarea.placeholder = 'Tell us what you think...';
   messageTextarea.required = true;
 
   const submitButton = document.createElement('button');
@@ -229,20 +299,21 @@
   const messageDiv = document.createElement('div');
   messageDiv.id = 'feedback-widget-message';
 
-  // Check for data-pro attribute to hide branding
-  const scriptTag = document.querySelector('script[src*="widget.js"]');
-  const isPro = scriptTag && scriptTag.getAttribute('data-pro') === 'true';
-
-  // Branding text (only show if not pro)
+  // Branding (only show if not pro)
   let brandingDiv = null;
   if (!isPro) {
     brandingDiv = document.createElement('div');
     brandingDiv.id = 'feedback-widget-branding';
-    brandingDiv.textContent = 'Powered by QuickFeedback';
-    brandingDiv.style.cssText = 'text-align: center; margin-top: 16px; font-size: 12px; color: #9ca3af;';
+    const brandingLink = document.createElement('a');
+    brandingLink.href = 'https://quickfeedback.co';
+    brandingLink.target = '_blank';
+    brandingLink.rel = 'noopener noreferrer';
+    brandingLink.textContent = 'Powered by QuickFeedback';
+    brandingDiv.appendChild(brandingLink);
   }
 
-  form.appendChild(title);
+  // Assemble form
+  form.appendChild(header);
   form.appendChild(nameLabel);
   form.appendChild(nameInput);
   form.appendChild(emailLabel);
@@ -267,19 +338,18 @@
   });
 
   // Close modal
-  closeButton.addEventListener('click', function() {
+  const closeModal = function() {
     modal.classList.remove('active');
     messageDiv.className = '';
     messageDiv.textContent = '';
     form.reset();
-  });
+  };
+
+  closeButton.addEventListener('click', closeModal);
 
   modal.addEventListener('click', function(e) {
     if (e.target === modal) {
-      modal.classList.remove('active');
-      messageDiv.className = '';
-      messageDiv.textContent = '';
-      form.reset();
+      closeModal();
     }
   });
 
@@ -316,15 +386,13 @@
 
       if (response.ok && data.success) {
         messageDiv.className = 'success';
-        messageDiv.textContent = 'Thank you! Your feedback has been submitted.';
+        messageDiv.innerHTML = '<span>✓</span> Thank you! Your feedback has been submitted.';
         form.reset();
         
-        // Close modal after 2 seconds
+        // Close modal after 3 seconds
         setTimeout(function() {
-          modal.classList.remove('active');
-          messageDiv.className = '';
-          messageDiv.textContent = '';
-        }, 2000);
+          closeModal();
+        }, 3000);
       } else {
         messageDiv.className = 'error';
         messageDiv.textContent = data.message || 'Failed to submit feedback. Please try again.';
@@ -342,11 +410,7 @@
   // Close on Escape key
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && modal.classList.contains('active')) {
-      modal.classList.remove('active');
-      messageDiv.className = '';
-      messageDiv.textContent = '';
-      form.reset();
+      closeModal();
     }
   });
 })();
-

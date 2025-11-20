@@ -52,13 +52,70 @@ export default function Home() {
               </div>
             </div>
             <div className="relative">
-              <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-8 shadow-2xl transform hover:scale-105 transition-transform">
-                <div className="bg-white rounded-lg p-6 space-y-4">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-32 bg-gray-100 rounded"></div>
-                  <div className="flex justify-end">
-                    <div className="h-10 w-24 bg-gradient-to-r from-blue-600 to-purple-600 rounded"></div>
+              <div className="relative transform hover:scale-105 transition-transform duration-300">
+                {/* Browser Window Mockup */}
+                <svg
+                  viewBox="0 0 600 400"
+                  className="w-full h-auto drop-shadow-2xl"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Browser Frame */}
+                  <rect x="0" y="0" width="600" height="400" rx="12" fill="#1F2937" />
+                  
+                  {/* Browser Header */}
+                  <rect x="0" y="0" width="600" height="40" rx="12" fill="#111827" />
+                  
+                  {/* Browser Controls */}
+                  <circle cx="20" cy="20" r="6" fill="#EF4444" />
+                  <circle cx="40" cy="20" r="6" fill="#F59E0B" />
+                  <circle cx="60" cy="20" r="6" fill="#10B981" />
+                  
+                  {/* Address Bar */}
+                  <rect x="100" y="12" width="400" height="16" rx="8" fill="#374151" />
+                  <text x="110" y="23" fontSize="10" fill="#9CA3AF" fontFamily="system-ui">quickfeedback.co</text>
+                  
+                  {/* Browser Content Area */}
+                  <rect x="0" y="40" width="600" height="360" rx="0" fill="#FFFFFF" />
+                  
+                  {/* Website Content - Header */}
+                  <rect x="40" y="60" width="200" height="12" rx="6" fill="#E5E7EB" />
+                  <rect x="40" y="80" width="300" height="16" rx="8" fill="#F3F4F6" />
+                  <rect x="40" y="104" width="250" height="16" rx="8" fill="#F3F4F6" />
+                  
+                  {/* Website Content - Card */}
+                  <rect x="40" y="140" width="520" height="180" rx="8" fill="#F9FAFB" stroke="#E5E7EB" strokeWidth="1" />
+                  <rect x="60" y="160" width="120" height="8" rx="4" fill="#D1D5DB" />
+                  <rect x="60" y="180" width="200" height="8" rx="4" fill="#E5E7EB" />
+                  <rect x="60" y="200" width="180" height="8" rx="4" fill="#E5E7EB" />
+                  <rect x="60" y="220" width="480" height="60" rx="6" fill="#FFFFFF" stroke="#E5E7EB" strokeWidth="1" />
+                  <rect x="70" y="230" width="460" height="6" rx="3" fill="#F3F4F6" />
+                  <rect x="70" y="245" width="400" height="6" rx="3" fill="#F3F4F6" />
+                  <rect x="70" y="260" width="440" height="6" rx="3" fill="#F3F4F6" />
+                  
+                  {/* Feedback Widget Button - Bottom Right */}
+                  <g transform="translate(520, 280)">
+                    {/* Button Shadow */}
+                    <circle cx="30" cy="30" r="30" fill="rgba(79, 70, 229, 0.2)" />
+                    {/* Button Circle */}
+                    <circle cx="30" cy="30" r="30" fill="url(#widgetGradient)" />
+                    {/* Chat Icon */}
+                    <text x="30" y="38" fontSize="20" textAnchor="middle" fill="white" fontFamily="system-ui">💬</text>
+                  </g>
+                  
+                  {/* Gradient Definition */}
+                  <defs>
+                    <linearGradient id="widgetGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#4F46E5" stopOpacity="1" />
+                      <stop offset="100%" stopColor="#7C3AED" stopOpacity="1" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                
+                {/* Floating Widget Indicator */}
+                <div className="absolute bottom-8 right-8 bg-white rounded-lg px-3 py-2 shadow-lg border border-gray-200 animate-pulse">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-xs font-semibold text-gray-700">Widget Active</span>
                   </div>
                 </div>
               </div>

@@ -2,7 +2,7 @@
   'use strict';
 
   // Widget configuration
-  const API_URL = 'http://localhost:3000/api/feedback';
+  const API_URL = 'https://quickfeedback.co/api/feedback';
 
   // Create widget styles
   const widgetStyles = `

@@ -28,7 +28,7 @@ export default function DashboardPage() {
   const [userLoading, setUserLoading] = useState(true);
   const [emailInput, setEmailInput] = useState('');
   const [showEmailInput, setShowEmailInput] = useState(false);
-  const embedCode = '<script src="http://localhost:3000/widget.js"></script>';
+  const embedCode = '<script src="https://quickfeedback.co/widget.js"></script>';
 
   const fetchFeedback = async () => {
     try {

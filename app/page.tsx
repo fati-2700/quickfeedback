@@ -51,72 +51,124 @@ export default function Home() {
                 </a>
               </div>
             </div>
-            <div className="relative">
-              <div className="relative transform hover:scale-105 transition-transform duration-300">
-                {/* Browser Window Mockup */}
-                <svg
-                  viewBox="0 0 600 400"
-                  className="w-full h-auto drop-shadow-2xl"
-                  xmlns="http://www.w3.org/2000/svg"
+            <div className="relative h-[500px] lg:h-[600px] flex items-center justify-center">
+              {/* Background Grid Pattern */}
+              <div 
+                className="absolute inset-0 opacity-20"
+                style={{
+                  backgroundImage: `
+                    linear-gradient(to right, #E5E7EB 1px, transparent 1px),
+                    linear-gradient(to bottom, #E5E7EB 1px, transparent 1px)
+                  `,
+                  backgroundSize: '40px 40px'
+                }}
+              />
+              
+              {/* Large Gradient Circle (Blur Effect) */}
+              <div 
+                className="absolute w-96 h-96 rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-500/30 blur-3xl"
+                style={{
+                  animation: 'float 6s ease-in-out infinite',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)'
+                }}
+              />
+              
+              {/* Abstract Blob Shapes */}
+              <div 
+                className="absolute w-64 h-64 rounded-full bg-gradient-to-br from-blue-300/20 to-purple-300/20 blur-2xl"
+                style={{
+                  animation: 'float 8s ease-in-out infinite',
+                  animationDelay: '1s',
+                  top: '20%',
+                  right: '10%'
+                }}
+              />
+              <div 
+                className="absolute w-48 h-48 rounded-full bg-gradient-to-br from-indigo-300/20 to-pink-300/20 blur-2xl"
+                style={{
+                  animation: 'float 7s ease-in-out infinite',
+                  animationDelay: '2s',
+                  bottom: '15%',
+                  left: '5%'
+                }}
+              />
+              
+              {/* Floating Particles/Dots */}
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-2 h-2 rounded-full bg-indigo-400/40"
+                  style={{
+                    animation: `float ${4 + i}s ease-in-out infinite`,
+                    animationDelay: `${i * 0.5}s`,
+                    top: `${20 + i * 12}%`,
+                    left: `${10 + i * 15}%`,
+                  }}
+                />
+              ))}
+              
+              {/* Main Widget Button (3D Effect) */}
+              <div 
+                className="relative z-10"
+                style={{
+                  animation: 'float 4s ease-in-out infinite'
+                }}
+              >
+                <div 
+                  className="w-[200px] h-[200px] rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center cursor-pointer transform transition-transform hover:scale-110"
+                  style={{
+                    boxShadow: '0 30px 60px rgba(79, 70, 229, 0.4)',
+                    animation: 'pulse-glow 3s ease-in-out infinite'
+                  }}
                 >
-                  {/* Browser Frame */}
-                  <rect x="0" y="0" width="600" height="400" rx="12" fill="#1F2937" />
-                  
-                  {/* Browser Header */}
-                  <rect x="0" y="0" width="600" height="40" rx="12" fill="#111827" />
-                  
-                  {/* Browser Controls */}
-                  <circle cx="20" cy="20" r="6" fill="#EF4444" />
-                  <circle cx="40" cy="20" r="6" fill="#F59E0B" />
-                  <circle cx="60" cy="20" r="6" fill="#10B981" />
-                  
-                  {/* Address Bar */}
-                  <rect x="100" y="12" width="400" height="16" rx="8" fill="#374151" />
-                  <text x="110" y="23" fontSize="10" fill="#9CA3AF" fontFamily="system-ui">quickfeedback.co</text>
-                  
-                  {/* Browser Content Area */}
-                  <rect x="0" y="40" width="600" height="360" rx="0" fill="#FFFFFF" />
-                  
-                  {/* Website Content - Header */}
-                  <rect x="40" y="60" width="200" height="12" rx="6" fill="#E5E7EB" />
-                  <rect x="40" y="80" width="300" height="16" rx="8" fill="#F3F4F6" />
-                  <rect x="40" y="104" width="250" height="16" rx="8" fill="#F3F4F6" />
-                  
-                  {/* Website Content - Card */}
-                  <rect x="40" y="140" width="520" height="180" rx="8" fill="#F9FAFB" stroke="#E5E7EB" strokeWidth="1" />
-                  <rect x="60" y="160" width="120" height="8" rx="4" fill="#D1D5DB" />
-                  <rect x="60" y="180" width="200" height="8" rx="4" fill="#E5E7EB" />
-                  <rect x="60" y="200" width="180" height="8" rx="4" fill="#E5E7EB" />
-                  <rect x="60" y="220" width="480" height="60" rx="6" fill="#FFFFFF" stroke="#E5E7EB" strokeWidth="1" />
-                  <rect x="70" y="230" width="460" height="6" rx="3" fill="#F3F4F6" />
-                  <rect x="70" y="245" width="400" height="6" rx="3" fill="#F3F4F6" />
-                  <rect x="70" y="260" width="440" height="6" rx="3" fill="#F3F4F6" />
-                  
-                  {/* Feedback Widget Button - Bottom Right */}
-                  <g transform="translate(520, 280)">
-                    {/* Button Shadow */}
-                    <circle cx="30" cy="30" r="30" fill="rgba(79, 70, 229, 0.2)" />
-                    {/* Button Circle */}
-                    <circle cx="30" cy="30" r="30" fill="url(#widgetGradient)" />
-                    {/* Chat Icon */}
-                    <text x="30" y="38" fontSize="20" textAnchor="middle" fill="white" fontFamily="system-ui">💬</text>
-                  </g>
-                  
-                  {/* Gradient Definition */}
-                  <defs>
-                    <linearGradient id="widgetGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#4F46E5" stopOpacity="1" />
-                      <stop offset="100%" stopColor="#7C3AED" stopOpacity="1" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                
-                {/* Floating Widget Indicator */}
-                <div className="absolute bottom-8 right-8 bg-white rounded-lg px-3 py-2 shadow-lg border border-gray-200 animate-pulse">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-xs font-semibold text-gray-700">Widget Active</span>
-                  </div>
+                  <span className="text-6xl">💬</span>
+                </div>
+              </div>
+              
+              {/* Mini Widget: Success Notification */}
+              <div 
+                className="absolute top-20 right-10 bg-white rounded-lg px-4 py-3 shadow-xl border border-gray-100 z-20"
+                style={{
+                  animation: 'slideInRight 1s ease-out, float 5s ease-in-out infinite 1s',
+                  opacity: 0.95
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-semibold text-gray-800">✓ Feedback sent</span>
+                </div>
+              </div>
+              
+              {/* Mini Widget: Badge with Red Dot */}
+              <div 
+                className="absolute bottom-32 left-8 bg-white rounded-full px-4 py-2 shadow-xl border border-gray-100 z-20 flex items-center gap-2"
+                style={{
+                  animation: 'slideInLeft 1.2s ease-out, float 6s ease-in-out infinite 1.2s',
+                  opacity: 0.95
+                }}
+              >
+                <div className="relative">
+                  <span className="text-sm font-semibold text-gray-800">5 new</span>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+                </div>
+              </div>
+              
+              {/* Mini Widget: Modal Preview */}
+              <div 
+                className="absolute top-1/2 -right-4 bg-white rounded-xl p-4 shadow-2xl border border-gray-100 z-20 w-48"
+                style={{
+                  animation: 'slideInRight 1.5s ease-out, float 7s ease-in-out infinite 1.5s',
+                  opacity: 0.9,
+                  transform: 'translateY(-50%)'
+                }}
+              >
+                <div className="space-y-2">
+                  <div className="h-2 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-2 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-16 bg-gray-50 rounded mt-3"></div>
+                  <div className="h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded"></div>
                 </div>
               </div>
             </div>
@@ -270,8 +322,8 @@ export default function Home() {
               </ul>
               <a
                 href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
+            target="_blank"
+            rel="noopener noreferrer"
                 className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
               >
                 Upgrade to Pro

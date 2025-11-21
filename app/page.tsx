@@ -401,4 +401,4 @@ function Home() {
   );
 }
 
-export default function Page() {}
+export default Home;

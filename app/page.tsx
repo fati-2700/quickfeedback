@@ -390,13 +390,6 @@ function Home() {
           </div>
         </div>
       </footer>
-
-      {/* QuickFeedback Widget */}
-      <Script
-        src="https://quickfeedback.co/widget.js"
-        data-project-id="tu-project-id"
-        strategy="afterInteractive"
-      />
     </div>
   );
 }

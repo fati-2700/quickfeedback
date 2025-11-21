@@ -394,7 +394,8 @@ function Home() {
       {/* QuickFeedback Widget */}
       <Script
         src="https://quickfeedback.co/widget.js"
-        strategy="lazyOnload"
+        data-project-id="tu-project-id"
+        strategy="afterInteractive"
       />
     </div>
   );

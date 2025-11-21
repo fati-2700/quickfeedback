@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Script from 'next/script';
 
-export default function Home() {
+function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header/Nav */}
@@ -399,6 +399,5 @@ export default function Home() {
     </div>
   );
 }
-    </div>
-  );
-}
+
+export default function Page() {}

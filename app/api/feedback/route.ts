@@ -4,11 +4,21 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Supabase client for reading feedback (using service role key, no auth needed)
-const supabaseRead = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Supabase client for reading feedback
+// Try service role key first, fallback to anon key if not available
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl) {
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL');
+}
+
+// Use service role key if available, otherwise use anon key
+const readKey = serviceRoleKey || anonKey;
+const supabaseRead = supabaseUrl && readKey
+  ? createClient(supabaseUrl, readKey)
+  : null;
 
 // Simple Supabase client for writing (using anon key for public submissions)
 const supabaseWrite = createClient(
@@ -18,6 +28,15 @@ const supabaseWrite = createClient(
 
 export async function GET() {
   try {
+    // Check if Supabase client is initialized
+    if (!supabaseRead) {
+      console.error('Supabase client not initialized. Check SUPABASE_SERVICE_ROLE_KEY env var.');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
     // No auth/cookie checking - public endpoint
     const { data, error } = await supabaseRead
       .from('feedback')
@@ -35,8 +54,9 @@ export async function GET() {
     return NextResponse.json(data || []);
   } catch (error) {
     console.error('Error fetching feedback:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Error fetching feedback' },
+      { error: 'Error fetching feedback: ' + errorMessage },
       { status: 500 }
     );
   }

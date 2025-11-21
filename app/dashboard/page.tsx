@@ -38,13 +38,25 @@ export default function DashboardPage() {
       setLoading(true);
       setError(null);
       const response = await fetch('/api/feedback');
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch feedback');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `Failed to fetch feedback (${response.status})`;
+        throw new Error(errorMessage);
       }
+      
       const data = await response.json();
-      setFeedback(data);
+      
+      // Check if response has error property
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      setFeedback(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      console.error('Error fetching feedback:', err);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

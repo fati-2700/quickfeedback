@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import Script from 'next/script';
 
-function Home() {
+export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header/Nav */}
@@ -323,8 +322,8 @@ function Home() {
               </ul>
               <a
                 href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || '#'}
-            target="_blank"
-            rel="noopener noreferrer"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
               >
                 Upgrade to Pro
@@ -369,29 +368,6 @@ function Home() {
           </div>
         </div>
       </footer>
-      {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-gray-900 text-gray-400">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <p className="text-sm">© 2025 QuickFeedback. All rights reserved.</p>
-            </div>
-            <div className="flex space-x-6">
-              <Link href="/auth" className="text-sm hover:text-white transition-colors">
-                Dashboard
-              </Link>
-              <a href="#" className="text-sm hover:text-white transition-colors">
-                Privacy
-              </a>
-              <a href="#" className="text-sm hover:text-white transition-colors">
-                Terms
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
-
-export default Home;

@@ -5,7 +5,6 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Supabase client for reading feedback
-// Try service role key first, fallback to anon key if not available
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -14,21 +13,18 @@ if (!supabaseUrl) {
   console.error('Missing NEXT_PUBLIC_SUPABASE_URL');
 }
 
-// Use service role key if available, otherwise use anon key
 const readKey = serviceRoleKey || anonKey;
 const supabaseRead = supabaseUrl && readKey
   ? createClient(supabaseUrl, readKey)
   : null;
 
-// Simple Supabase client for writing (using anon key for public submissions)
 const supabaseWrite = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Check if Supabase client is initialized
     if (!supabaseRead) {
       console.error('Supabase client not initialized. Check SUPABASE_SERVICE_ROLE_KEY env var.');
       return NextResponse.json(
@@ -37,11 +33,18 @@ export async function GET() {
       );
     }
 
-    // No auth/cookie checking - public endpoint
-    const { data, error } = await supabaseRead
-      .from('feedback')
-      .select('*')
-      .order('created_at', { ascending: false });
+    // Get userId from query params (for filtering by user)
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    let query = supabaseRead.from('feedback').select('*');
+    
+    // Filter by user_id if provided
+    if (userId) {
+      query = query.eq('user_id', userId);
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Supabase error:', error);
@@ -65,7 +68,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, message, siteUrl } = body;
+    const { name, email, message, siteUrl, projectId } = body;
 
     // Validate required fields
     if (!name || !email || !message) {
@@ -82,7 +85,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert feedback into Supabase (using anon key for public widget submissions)
+    // Validate projectId
+    if (!projectId) {
+      return NextResponse.json(
+        { success: false, message: 'Missing project ID' },
+        {
+          status: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+        }
+      );
+    }
+
+    // Get user email from Supabase to send notification
+    let userEmail = 'fatitalo84@gmail.com'; // fallback
+    if (supabaseRead) {
+      const { data: userData } = await supabaseRead
+        .from('users')
+        .select('email')
+        .eq('id', projectId)
+        .single();
+      
+      if (userData?.email) {
+        userEmail = userData.email;
+      }
+    }
+
+    // Insert feedback into Supabase with user_id
     const { data, error } = await supabaseWrite
       .from('feedback')
       .insert([
@@ -91,6 +123,7 @@ export async function POST(request: NextRequest) {
           email,
           message,
           site_url: siteUrl || null,
+          user_id: projectId, // Save the project owner's ID
         },
       ])
       .select()
@@ -111,7 +144,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send email notifications
+    // Send confirmation email to feedback submitter
     try {
       await resend.emails.send({
         from: 'QuickFeedback <onboarding@resend.dev>',
@@ -138,10 +171,11 @@ export async function POST(request: NextRequest) {
       console.error('Error sending confirmation email:', emailError);
     }
 
+    // Send notification email to project owner
     try {
       await resend.emails.send({
         from: 'QuickFeedback <onboarding@resend.dev>',
-        to: 'fatitalo84@gmail.com',
+        to: userEmail,
         subject: 'New Feedback Received!',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

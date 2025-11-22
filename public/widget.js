@@ -4,6 +4,15 @@
   // Widget configuration
   const API_URL = 'https://quickfeedback.co/api/feedback';
 
+  // Get project ID from script tag
+  const scriptTag = document.querySelector('script[src*="widget.js"]');
+  const projectId = scriptTag ? scriptTag.getAttribute('data-project-id') : null;
+
+  if (!projectId) {
+    console.error('QuickFeedback: Missing data-project-id attribute');
+    return;
+  }
+
   // Create widget styles
   const widgetStyles = `
     @keyframes pulse {
@@ -218,7 +227,6 @@
   document.head.appendChild(styleSheet);
 
   // Check for data-pro attribute to hide branding
-  const scriptTag = document.querySelector('script[src*="widget.js"]');
   const isPro = scriptTag && scriptTag.getAttribute('data-pro') === 'true';
 
   // Create floating button
@@ -379,6 +387,7 @@
           email,
           message,
           siteUrl,
+          projectId, // ✅ AGREGADO: Envía el project ID
         }),
       });
 

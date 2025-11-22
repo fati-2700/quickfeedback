@@ -31,7 +31,11 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
-  const embedCode = '<script src="https://quickfeedback.co/widget.js"></script>';
+
+  // Generate embed code dynamically with user's ID as project-id
+  const embedCode = authUser 
+    ? `<script src="https://quickfeedback.co/widget.js" data-project-id="${authUser.id}"></script>`
+    : '<script src="https://quickfeedback.co/widget.js" data-project-id="YOUR_PROJECT_ID"></script>';
 
   const fetchFeedback = async () => {
     try {
@@ -151,12 +155,14 @@ export default function DashboardPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete feedback');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to delete feedback');
       }
 
       // Remove from local state
       setFeedback(feedback.filter((item) => item.id !== id));
     } catch (err) {
+      console.error('Delete error:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete feedback');
     } finally {
       setDeletingId(null);
@@ -253,7 +259,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Embed Code Section */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4 text-gray-800">Embed Code</h2>
         <div className="bg-gray-50 border border-gray-200 rounded-md p-3 mb-4 font-mono text-sm text-gray-700 break-all">

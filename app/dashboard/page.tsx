@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
+// Dashboard component for managing feedback
+
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [feedbackList, setFeedbackList] = useState<any[]>([]);

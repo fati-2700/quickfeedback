@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test QuickFeedback Widget - Local</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 60px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 60px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 3em;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            font-size: 1.2em;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+        
+        .info {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+        
+        .info h2 {
+            color: #4F46E5;
+            margin-bottom: 10px;
+        }
+        
+        .warning {
+            background: #FEF3C7;
+            border-left: 4px solid #F59E0B;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .warning strong {
+            color: #92400E;
+        }
+        
+        .code {
+            background: #1F2937;
+            color: #10B981;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .arrow {
+            font-size: 2em;
+            color: #4F46E5;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 QuickFeedback - Test Local</h1>
+        
+        <p>
+            Esta es una página de prueba para el widget de QuickFeedback.
+            El widget debería aparecer como un botón flotante en la esquina inferior derecha.
+        </p>
+        
+        <div class="warning">
+            <strong>⚠️ Importante:</strong> Asegúrate de que el servidor de desarrollo esté corriendo 
+            (<code>npm run dev</code>) y reemplaza <code>TU_PROJECT_ID</code> abajo con tu ID de usuario de Supabase.
+            Puedes encontrarlo en el dashboard después de iniciar sesión.
+        </div>
+        
+        <div class="info">
+            <h2>Instrucciones de Prueba:</h2>
+            <p style="margin: 0;">
+                1. Busca el botón morado de chat en la esquina inferior derecha <span class="arrow">↘</span><br>
+                2. Haz clic para abrir el formulario de feedback<br>
+                3. Completa tus datos y envía el feedback<br>
+                4. Revisa la consola del navegador (F12) para ver si hay errores<br>
+                5. Ve al dashboard para ver el feedback recibido
+            </p>
+        </div>
+        
+        <div class="info">
+            <h2>Para obtener tu Project ID:</h2>
+            <p style="margin: 0;">
+                1. Inicia sesión en <a href="http://localhost:3000/dashboard" target="_blank">http://localhost:3000/dashboard</a><br>
+                2. Copia el código de embed que aparece en la página<br>
+                3. El <code>data-project-id</code> es tu Project ID<br>
+                4. Reemplázalo en el script de abajo
+            </p>
+        </div>
+        
+        <p>
+            Bienvenido a nuestra plataforma. Tu feedback nos ayuda a mejorar y ofrecer la mejor experiencia posible.
+        </p>
+        
+        <p>
+            ¡Prueba hacer clic en el botón de feedback ahora y cuéntanos qué piensas!
+        </p>
+    </div>
+    
+    <!-- QuickFeedback Widget - LOCAL -->
+    <!-- Reemplaza TU_PROJECT_ID con tu ID real de Supabase -->
+    <script src="http://localhost:3000/widget.js" data-project-id="87442a5c-340e-477f-939f-d4f71db7ee1a"></script>
+    
+    <!-- Para producción, usa: -->
+    <!-- <script src="https://quickfeedback.co/widget.js" data-project-id="TU_PROJECT_ID"></script> -->
+</body>
+</html>
+

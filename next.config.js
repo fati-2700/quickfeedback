@@ -10,6 +10,13 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
         ],
       },
+      {
+        source: '/widget.js',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Content-Type', value: 'application/javascript' },
+        ],
+      },
     ];
   },
   // Disable trailing slash redirects

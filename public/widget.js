@@ -1,12 +1,22 @@
 (function() {
   'use strict';
 
-  // Widget configuration
-  const API_URL = 'https://quickfeedback.co/api/feedback';
-
   // Get project ID from script tag
   const scriptTag = document.querySelector('script[src*="widget.js"]');
   const projectId = scriptTag ? scriptTag.getAttribute('data-project-id') : null;
+  
+  // Widget configuration - Auto-detect localhost or production
+  // Check if script is loaded from localhost (for development)
+  const scriptSrc = scriptTag ? scriptTag.getAttribute('src') : '';
+  const isFileProtocol = window.location.protocol === 'file:';
+  const isLocalhostPage = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const isLocalhostScript = scriptSrc.includes('localhost') || scriptSrc.includes('127.0.0.1');
+  
+  // Use localhost API if: page is localhost, script is from localhost, or file protocol (for local testing)
+  const useLocalhost = isLocalhostPage || isLocalhostScript || isFileProtocol;
+  const API_URL = useLocalhost 
+    ? 'http://localhost:3000/api/feedback'
+    : 'https://quickfeedback.co/api/feedback';
 
   if (!projectId) {
     console.error('QuickFeedback: Missing data-project-id attribute');
@@ -383,12 +393,12 @@
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name,
-          email,
-          message,
-          siteUrl,
-          projectId, // ✅ AGREGADO: Envía el project ID
-        }),
+          projectId: projectId,
+          name: name,
+          email: email,
+          message: message,
+          siteUrl: siteUrl
+        })
       });
 
       const data = await response.json();

@@ -1,364 +1,228 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { Sparkles, LogOut, Trash2, Copy, Check, CreditCard } from 'lucide-react';
 
-interface Feedback {
-  id: string;
-  name: string;
-  email: string;
-  message: string;
-  site_url: string | null;
-  created_at: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  plan: 'free' | 'pro';
-  created_at: string;
-}
-
-export default function DashboardPage() {
-  const router = useRouter();
-  const [copied, setCopied] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback[]>([]);
+export default function Dashboard() {
+  const [user, setUser] = useState<any>(null);
+  const [feedbackList, setFeedbackList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [userLoading, setUserLoading] = useState(true);
-  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
-
-  // Generate embed code dynamically with user's ID as project-id
-  const embedCode = authUser 
-    ? `<script src="https://quickfeedback.co/widget.js" data-project-id="${authUser.id}"></script>`
-    : '<script src="https://quickfeedback.co/widget.js" data-project-id="YOUR_PROJECT_ID"></script>';
-
-  const fetchFeedback = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await fetch('/api/feedback');
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || `Failed to fetch feedback (${response.status})`;
-        throw new Error(errorMessage);
-      }
-      
-      const data = await response.json();
-      
-      // Check if response has error property
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      
-      setFeedback(Array.isArray(data) ? data : []);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      console.error('Error fetching feedback:', err);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [isProUser, setIsProUser] = useState(false);
+  const [loadingUpgrade, setLoadingUpgrade] = useState(false);
+  const router = useRouter();
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
-    checkAuth();
+    checkUser();
   }, []);
 
-  const checkAuth = async () => {
-    try {
-      setUserLoading(true);
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError) {
-        console.error('Error getting session:', sessionError);
-        router.push('/auth');
-        return;
-      }
-
-      if (!sessionData.session) {
-        router.push('/auth');
-        return;
-      }
-
-      const sessionUser = sessionData.session.user;
-      setAuthUser(sessionUser);
-
-      // Fetch user plan from database
-      if (sessionUser.email) {
-        await fetchUserPlan(sessionUser.email);
-      }
-
-      // Fetch feedback
-      await fetchFeedback();
-    } catch (err) {
-      console.error('Error checking auth:', err);
-      router.push('/auth');
-    } finally {
-      setUserLoading(false);
+  async function checkUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      router.push('/login');
+      return;
     }
-  };
+    setUser(user);
+    
+    // Verificar si es usuario PRO
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_status')
+      .eq('id', user.id)
+      .single();
+    
+    setIsProUser(profile?.subscription_status === 'pro');
+    
+    // Cargar feedback
+    const { data: feedback } = await supabase
+      .from('feedback')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    
+    if (feedback) {
+      setFeedbackList(feedback);
+    }
+    setLoading(false);
+  }
 
-  const fetchUserPlan = async (email: string) => {
+  async function handleUpgrade() {
+    setLoadingUpgrade(true);
     try {
-      const response = await fetch('/api/auth', {
+      const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({
+          userId: user.id,
+          email: user.email,
+        }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.user) {
-          setUser(data.user);
-        }
+      const { sessionId, url } = await response.json();
+      
+      if (url) {
+        window.location.href = url;
       }
-    } catch (err) {
-      console.error('Error fetching user plan:', err);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al procesar el pago. Por favor intenta de nuevo.');
+    } finally {
+      setLoadingUpgrade(false);
     }
-  };
+  }
 
   const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      router.push('/');
-    } catch (err) {
-      console.error('Error signing out:', err);
-    }
+    await supabase.auth.signOut();
+    router.push('/');
   };
 
-  const handleUpgrade = () => {
-    const paymentLink = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || '';
-    if (paymentLink) {
-      window.open(paymentLink, '_blank');
-    } else {
-      alert('Payment link not configured. Please set NEXT_PUBLIC_STRIPE_PAYMENT_LINK in your environment variables.');
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this feedback?')) {
-      return;
-    }
-
-    try {
-      setDeletingId(id);
-      const response = await fetch(`/api/feedback/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to delete feedback');
-      }
-
-      // Remove from local state
-      setFeedback(feedback.filter((item) => item.id !== id));
-    } catch (err) {
-      console.error('Delete error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete feedback');
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  const copyEmbedCode = () => {
+  const handleCopy = () => {
+    const embedCode = `<script src="https://quickfeedback.co/widget.js" data-project-id="${user?.id || ''}"></script>`;
     navigator.clipboard.writeText(embedCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    const { error } = await supabase
+      .from('feedback')
+      .delete()
+      .eq('id', id);
+    
+    if (!error) {
+      setFeedbackList(feedbackList.filter(f => f.id !== id));
+    }
+    setDeletingId(null);
   };
 
-  // Show loading state while checking auth
-  if (userLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-gray-500">Loading...</div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center">
+        <div className="text-purple-600">Cargando...</div>
       </div>
     );
   }
 
-  // Don't render if not authenticated (redirect should happen, but just in case)
-  if (!authUser) {
-    return null;
-  }
-
   return (
-    <div className="p-10 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Feedback Dashboard</h1>
-        <div className="flex items-center gap-4">
-          {userLoading ? (
-            <div className="text-sm text-gray-500">Loading...</div>
-          ) : authUser ? (
-            <>
-              <div className="text-sm text-gray-600">
-                {authUser.email}
-              </div>
-              {user && (
-                <>
-                  <div className="text-sm">
-                    <span className="text-gray-600">Plan: </span>
-                    <span className={`font-semibold ${user.plan === 'pro' ? 'text-purple-600' : 'text-gray-800'}`}>
-                      {user.plan === 'pro' ? 'Pro' : 'Free'}
-                    </span>
-                  </div>
-                  {user.plan === 'free' && (
-                    <button
-                      onClick={handleUpgrade}
-                      className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-semibold"
-                    >
-                      Upgrade to Pro - €9/month
-                    </button>
-                  )}
-                </>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
+      <nav className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-8 w-8 text-purple-600" />
+              <span className="text-xl font-bold text-gray-900">QuickFeedback</span>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              {!isProUser && (
+                <button
+                  onClick={handleUpgrade}
+                  disabled={loadingUpgrade}
+                  className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+                >
+                  <CreditCard className="h-4 w-4" />
+                  {loadingUpgrade ? 'Procesando...' : 'Upgrade a PRO (€9/mes)'}
+                </button>
               )}
+              
+              {isProUser && (
+                <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg font-medium">
+                  ⭐ Usuario PRO
+                </span>
+              )}
+              
+              <span className="text-gray-600">{user?.email}</span>
               <button
                 onClick={handleSignOut}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm font-semibold"
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
-                Sign Out
+                <LogOut className="h-5 w-5" />
+                Salir
               </button>
-            </>
-          ) : null}
+            </div>
+          </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Upgrade to Pro Section */}
-      {user && user.plan === 'free' && (
-        <div className="bg-blue-500 rounded-lg p-6 mb-8 text-white">
-          <h2 className="text-2xl font-bold mb-2">Current Plan: Free</h2>
-          <p className="mb-4 text-blue-50">Remove "Powered by QuickFeedback" branding</p>
-          <a
-            href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || '#'}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button className="bg-white text-blue-600 px-8 py-3 rounded-md font-bold text-lg hover:bg-blue-50 transition-colors">
-              Upgrade to Pro - €9/month
-            </button>
-          </a>
-        </div>
-      )}
-
-      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Embed Code</h2>
-        <div className="bg-gray-50 border border-gray-200 rounded-md p-3 mb-4 font-mono text-sm text-gray-700 break-all">
-          {embedCode}
-        </div>
-        <button
-          onClick={copyEmbedCode}
-          className={`px-5 py-2 rounded-md text-sm font-semibold text-white transition-colors ${
-            copied
-              ? 'bg-green-500 hover:bg-green-600'
-              : 'bg-blue-500 hover:bg-blue-600'
-          }`}
-        >
-          {copied ? 'Copied!' : 'Copy Embed Code'}
-        </button>
-      </div>
-
-      {/* Feedback Table Section */}
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Feedback</h2>
-        </div>
-
-        {loading && (
-          <div className="p-8 text-center text-gray-500">Loading feedback...</div>
-        )}
-
-        {error && (
-          <div className="p-4 mx-6 mt-4 bg-red-50 border border-red-200 rounded-md text-red-700">
-            {error}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Tu código de integración</h2>
+          <p className="text-gray-600 mb-4">Copia y pega este código en tu sitio web donde quieras que aparezca el widget:</p>
+          
+          <div className="bg-gray-50 p-4 rounded-lg font-mono text-sm relative">
+            <code className="text-purple-600">
+              {`<script src="https://quickfeedback.co/widget.js" data-project-id="${user?.id || ''}"></script>`}
+            </code>
             <button
-              onClick={fetchFeedback}
-              className="ml-4 text-red-600 underline hover:text-red-800"
+              onClick={handleCopy}
+              className="absolute right-4 top-4 p-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
             >
-              Retry
+              {copied ? (
+                <Check className="h-4 w-4 text-green-600" />
+              ) : (
+                <Copy className="h-4 w-4 text-gray-600" />
+              )}
             </button>
           </div>
-        )}
+        </div>
 
-        {!loading && !error && feedback.length === 0 && (
-          <div className="p-8 text-center text-gray-500">
-            No feedback yet. Feedback will appear here once submitted.
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Feedback recibido</h2>
+            <span className="text-sm text-gray-500">{feedbackList.length} respuestas</span>
           </div>
-        )}
 
-        {!loading && !error && feedback.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Message
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {feedback.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {item.email}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 max-w-md">
-                      <div className="truncate" title={item.message}>
-                        {item.message}
+          {feedbackList.length === 0 ? (
+            <p className="text-center text-gray-500 py-8">
+              No hay feedback todavía. ¡Instala el widget en tu sitio para empezar a recibir opiniones!
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {feedbackList.map((feedback) => (
+                <div key={feedback.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{feedback.name || 'Anónimo'}</h3>
+                      <p className="text-sm text-gray-500">{feedback.email || 'Sin email'}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <span key={i} className={`text-xl ${i < feedback.rating ? 'text-yellow-400' : 'text-gray-300'}`}>
+                            ★
+                          </span>
+                        ))}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(item.created_at)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => handleDelete(item.id)}
-                        disabled={deletingId === item.id}
-                        className="text-red-600 hover:text-red-900 disabled:text-gray-400 disabled:cursor-not-allowed"
+                        onClick={() => handleDelete(feedback.id)}
+                        disabled={deletingId === feedback.id}
+                        className="text-red-500 hover:text-red-700 transition-colors p-1"
                       >
-                        {deletingId === item.id ? 'Deleting...' : 'Delete'}
+                        {deletingId === feedback.id ? (
+                          <span className="text-sm">Eliminando...</span>
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-700">{feedback.message}</p>
+                  <p className="text-xs text-gray-400 mt-3">
+                    {new Date(feedback.created_at).toLocaleString('es-ES')}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

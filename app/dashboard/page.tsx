@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
 export default function Dashboard() {
@@ -13,7 +13,6 @@ export default function Dashboard() {
   const [isProUser, setIsProUser] = useState(false);
   const [loadingUpgrade, setLoadingUpgrade] = useState(false);
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
     checkUser();

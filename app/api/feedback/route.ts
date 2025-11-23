@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
+// Force dynamic route
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Supabase client for reading feedback
@@ -23,13 +27,22 @@ const supabaseWrite = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// CORS headers helper
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     if (!supabaseRead) {
       console.error('Supabase client not initialized. Check SUPABASE_SERVICE_ROLE_KEY env var.');
       return NextResponse.json(
         { error: 'Server configuration error' },
-        { status: 500 }
+        { status: 500, headers: corsHeaders() }
       );
     }
 
@@ -50,17 +63,17 @@ export async function GET(request: NextRequest) {
       console.error('Supabase error:', error);
       return NextResponse.json(
         { error: 'Error fetching feedback: ' + error.message },
-        { status: 500 }
+        { status: 500, headers: corsHeaders() }
       );
     }
 
-    return NextResponse.json(data || []);
+    return NextResponse.json(data || [], { headers: corsHeaders() });
   } catch (error) {
     console.error('Error fetching feedback:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { error: 'Error fetching feedback: ' + errorMessage },
-      { status: 500 }
+      { status: 500, headers: corsHeaders() }
     );
   }
 }
@@ -74,14 +87,7 @@ export async function POST(request: NextRequest) {
     if (!name || !email || !message) {
       return NextResponse.json(
         { success: false, message: 'Missing required fields' },
-        {
-          status: 400,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          },
-        }
+        { status: 400, headers: corsHeaders() }
       );
     }
 
@@ -89,14 +95,7 @@ export async function POST(request: NextRequest) {
     if (!projectId) {
       return NextResponse.json(
         { success: false, message: 'Missing project ID' },
-        {
-          status: 400,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          },
-        }
+        { status: 400, headers: corsHeaders() }
       );
     }
 
@@ -133,14 +132,7 @@ export async function POST(request: NextRequest) {
       console.error('Supabase error:', error);
       return NextResponse.json(
         { success: false, message: 'Error saving feedback: ' + error.message },
-        {
-          status: 500,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          },
-        }
+        { status: 500, headers: corsHeaders() }
       );
     }
 
@@ -198,41 +190,20 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { success: true, message: 'Feedback submitted successfully', data },
-      {
-        status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      }
+      { status: 200, headers: corsHeaders() }
     );
   } catch (error) {
     console.error('Error processing feedback:', error);
     return NextResponse.json(
       { success: false, message: 'Error processing feedback' },
-      {
-        status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      }
+      { status: 500, headers: corsHeaders() }
     );
   }
 }
 
 export async function OPTIONS() {
-  return NextResponse.json(
-    {},
-    {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    }
-  );
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders(),
+  });
 }

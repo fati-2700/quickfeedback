@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
-import { Sparkles, LogOut, Trash2, Copy, Check, CreditCard } from 'lucide-react';
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -116,7 +115,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-8 w-8 text-purple-600" />
+              <span className="text-2xl">✨</span>
               <span className="text-xl font-bold text-gray-900">QuickFeedback</span>
             </div>
             
@@ -127,8 +126,7 @@ export default function Dashboard() {
                   disabled={loadingUpgrade}
                   className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200 disabled:opacity-50"
                 >
-                  <CreditCard className="h-4 w-4" />
-                  {loadingUpgrade ? 'Procesando...' : 'Upgrade a PRO (€9/mes)'}
+                  💳 {loadingUpgrade ? 'Procesando...' : 'Upgrade a PRO (€9/mes)'}
                 </button>
               )}
               
@@ -141,10 +139,9 @@ export default function Dashboard() {
               <span className="text-gray-600">{user?.email}</span>
               <button
                 onClick={handleSignOut}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-gray-600 hover:text-gray-900 transition-colors"
               >
-                <LogOut className="h-5 w-5" />
-                Salir
+                Salir →
               </button>
             </div>
           </div>
@@ -162,13 +159,9 @@ export default function Dashboard() {
             </code>
             <button
               onClick={handleCopy}
-              className="absolute right-4 top-4 p-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+              className="absolute right-4 top-4 px-3 py-1 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-sm"
             >
-              {copied ? (
-                <Check className="h-4 w-4 text-green-600" />
-              ) : (
-                <Copy className="h-4 w-4 text-gray-600" />
-              )}
+              {copied ? '✓ Copiado' : '📋 Copiar'}
             </button>
           </div>
         </div>
@@ -203,13 +196,9 @@ export default function Dashboard() {
                       <button
                         onClick={() => handleDelete(feedback.id)}
                         disabled={deletingId === feedback.id}
-                        className="text-red-500 hover:text-red-700 transition-colors p-1"
+                        className="text-red-500 hover:text-red-700 transition-colors text-sm"
                       >
-                        {deletingId === feedback.id ? (
-                          <span className="text-sm">Eliminando...</span>
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
+                        {deletingId === feedback.id ? 'Eliminando...' : '🗑️'}
                       </button>
                     </div>
                   </div>

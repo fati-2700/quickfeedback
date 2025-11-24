@@ -35,6 +35,18 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Limpiar deletingId si se queda atascado (timeout de seguridad)
+  useEffect(() => {
+    if (deletingId) {
+      const timeout = setTimeout(() => {
+        console.warn('DeletingId stuck, resetting...');
+        setDeletingId(null);
+      }, 10000); // 10 segundos máximo
+
+      return () => clearTimeout(timeout);
+    }
+  }, [deletingId]);
+
   async function checkUser() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -189,26 +201,40 @@ export default function Dashboard() {
       return;
     }
 
+    console.log('Deleting feedback with id:', id);
+    console.log('Current deletingId:', deletingId);
+    
     setDeletingId(id);
+    
     try {
-      const { error } = await supabase
+      console.log('Calling Supabase delete for id:', id);
+      const { error, data } = await supabase
         .from('feedback')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select();
+      
+      console.log('Delete response:', { error, data });
       
       if (error) {
         console.error('Error deleting feedback:', error);
         alert('Error al eliminar el feedback. Por favor intenta de nuevo.');
       } else {
+        console.log('Feedback deleted successfully, updating list');
         // Actualizar la lista localmente
-        setFeedbackList(feedbackList.filter(f => f.id !== id));
+        setFeedbackList(prevList => prevList.filter(f => f.id !== id));
       }
     } catch (error) {
       console.error('Error deleting feedback:', error);
       alert('Error al eliminar el feedback. Por favor intenta de nuevo.');
     } finally {
       // Siempre resetear el estado, incluso si hay error
+      console.log('Resetting deletingId to null');
       setDeletingId(null);
+      // Forzar un re-render después de un pequeño delay para asegurar que el estado se actualice
+      setTimeout(() => {
+        setDeletingId(null);
+      }, 100);
     }
   };
 
@@ -311,10 +337,10 @@ export default function Dashboard() {
                       </div>
                       <button
                         onClick={() => handleDelete(feedback.id)}
-                        disabled={deletingId === feedback.id}
-                        className="text-red-500 hover:text-red-700 transition-colors text-sm"
+                        disabled={deletingId === feedback.id || deletingId === String(feedback.id)}
+                        className="text-red-500 hover:text-red-700 transition-colors text-sm disabled:opacity-50"
                       >
-                        {deletingId === feedback.id ? 'Eliminando...' : '🗑️'}
+                        {(deletingId === feedback.id || deletingId === String(feedback.id)) ? 'Eliminando...' : '🗑️'}
                       </button>
                     </div>
                   </div>

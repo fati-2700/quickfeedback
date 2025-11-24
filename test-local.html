@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -92,51 +92,51 @@
         <h1>🚀 QuickFeedback - Test Local</h1>
         
         <p>
-            Esta es una página de prueba para el widget de QuickFeedback.
-            El widget debería aparecer como un botón flotante en la esquina inferior derecha.
+            This is a test page for the QuickFeedback widget.
+            The widget should appear as a floating button in the bottom right corner.
         </p>
         
         <div class="warning">
-            <strong>⚠️ Importante:</strong> Asegúrate de que el servidor de desarrollo esté corriendo 
-            (<code>npm run dev</code>) y reemplaza <code>TU_PROJECT_ID</code> abajo con tu ID de usuario de Supabase.
-            Puedes encontrarlo en el dashboard después de iniciar sesión.
+            <strong>⚠️ Important:</strong> Make sure the development server is running 
+            (<code>npm run dev</code>) and replace <code>TU_PROJECT_ID</code> below with your Supabase user ID.
+            You can find it in the dashboard after signing in.
         </div>
         
         <div class="info">
-            <h2>Instrucciones de Prueba:</h2>
+            <h2>Test Instructions:</h2>
             <p style="margin: 0;">
-                1. Busca el botón morado de chat en la esquina inferior derecha <span class="arrow">↘</span><br>
-                2. Haz clic para abrir el formulario de feedback<br>
-                3. Completa tus datos y envía el feedback<br>
-                4. Revisa la consola del navegador (F12) para ver si hay errores<br>
-                5. Ve al dashboard para ver el feedback recibido
+                1. Look for the purple chat button in the bottom right corner <span class="arrow">↘</span><br>
+                2. Click to open the feedback form<br>
+                3. Fill in your details and submit the feedback<br>
+                4. Check the browser console (F12) to see if there are any errors<br>
+                5. Go to the dashboard to see the received feedback
             </p>
         </div>
         
         <div class="info">
-            <h2>Para obtener tu Project ID:</h2>
+            <h2>To get your Project ID:</h2>
             <p style="margin: 0;">
-                1. Inicia sesión en <a href="http://localhost:3000/dashboard" target="_blank">http://localhost:3000/dashboard</a><br>
-                2. Copia el código de embed que aparece en la página<br>
-                3. El <code>data-project-id</code> es tu Project ID<br>
-                4. Reemplázalo en el script de abajo
+                1. Sign in at <a href="http://localhost:3000/dashboard" target="_blank">http://localhost:3000/dashboard</a><br>
+                2. Copy the embed code that appears on the page<br>
+                3. The <code>data-project-id</code> is your Project ID<br>
+                4. Replace it in the script below
             </p>
         </div>
         
         <p>
-            Bienvenido a nuestra plataforma. Tu feedback nos ayuda a mejorar y ofrecer la mejor experiencia posible.
+            Welcome to our platform. Your feedback helps us improve and offer the best possible experience.
         </p>
         
         <p>
-            ¡Prueba hacer clic en el botón de feedback ahora y cuéntanos qué piensas!
+            Try clicking the feedback button now and tell us what you think!
         </p>
     </div>
     
     <!-- QuickFeedback Widget - LOCAL -->
-    <!-- Reemplaza TU_PROJECT_ID con tu ID real de Supabase -->
+    <!-- Replace TU_PROJECT_ID with your actual Supabase ID -->
     <script src="http://localhost:3000/widget.js" data-project-id="87442a5c-340e-477f-939f-d4f71db7ee1a"></script>
     
-    <!-- Para producción, usa: -->
+    <!-- For production, use: -->
     <!-- <script src="https://quickfeedback.co/widget.js" data-project-id="TU_PROJECT_ID"></script> -->
 </body>
 </html>

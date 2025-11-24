@@ -5,7 +5,7 @@
 </head>
 <body>
     <h1>Test QuickFeedback</h1>
-    <p>El widget debería aparecer abajo a la derecha</p>
+    <p>The widget should appear at the bottom right</p>
     
     <script src="https://quickfeedback.co/widget.js" data-project-id="87442a5c-340e-477f-939f-d4f71db7ee1a"></script>
 </body>

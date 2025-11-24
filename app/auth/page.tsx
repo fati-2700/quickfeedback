@@ -74,20 +74,30 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      console.log('Attempting sign in with email:', email);
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('Sign in response:', { data, error: signInError });
+
       if (signInError) {
-        setError(signInError.message);
+        console.error('Sign in error:', signInError);
+        setError(signInError.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.');
       } else {
+        console.log('Sign in successful, redirecting to dashboard');
         // Redirect to dashboard on success
         router.push('/dashboard');
       }
     } catch (err) {
-      setError('An unexpected error occurred');
-      console.error('Sign in error:', err);
+      console.error('Sign in exception:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      if (errorMessage.includes('fetch') || errorMessage.includes('network')) {
+        setError('Error de conexión. Por favor verifica tu conexión a internet y las variables de entorno de Supabase.');
+      } else {
+        setError(`Error inesperado: ${errorMessage}`);
+      }
     } finally {
       setLoading(false);
     }

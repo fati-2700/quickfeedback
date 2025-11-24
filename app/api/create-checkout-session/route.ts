@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-// No inicializar Stripe aquí, hacerlo después de validar las variables
+// Don't initialize Stripe here, do it after validating variables
 let stripe: Stripe | null = null;
 
 function getStripeClient(): Stripe {

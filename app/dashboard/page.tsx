@@ -141,7 +141,7 @@ export default function Dashboard() {
         // Show a more descriptive message
         let userFriendlyMessage = errorMsg;
         if (response.status === 500) {
-          if (errorMsg.includes('Stripe no está configurado') || errorMsg.includes('Stripe is not configured')) {
+          if (errorMsg.includes('Stripe is not configured')) {
             userFriendlyMessage = 'Error: Stripe is not configured. Please contact the administrator.';
           } else if (errorMsg.includes('NEXT_PUBLIC_URL')) {
             userFriendlyMessage = 'Error: Incomplete server configuration. Please contact the administrator.';

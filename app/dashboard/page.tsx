@@ -39,9 +39,9 @@ export default function Dashboard() {
   useEffect(() => {
     if (deletingId) {
       const timeout = setTimeout(() => {
-        console.warn('DeletingId stuck, resetting...');
+        console.warn('DeletingId stuck, resetting...', deletingId);
         setDeletingId(null);
-      }, 10000); // 10 segundos máximo
+      }, 5000); // 5 segundos máximo
 
       return () => clearTimeout(timeout);
     }
@@ -201,40 +201,34 @@ export default function Dashboard() {
       return;
     }
 
-    console.log('Deleting feedback with id:', id);
-    console.log('Current deletingId:', deletingId);
+    const feedbackId = String(id); // Asegurar que sea string
+    console.log('Deleting feedback with id:', feedbackId);
     
-    setDeletingId(id);
+    setDeletingId(feedbackId);
     
     try {
-      console.log('Calling Supabase delete for id:', id);
-      const { error, data } = await supabase
+      const { error } = await supabase
         .from('feedback')
         .delete()
-        .eq('id', id)
-        .select();
-      
-      console.log('Delete response:', { error, data });
+        .eq('id', id);
       
       if (error) {
         console.error('Error deleting feedback:', error);
         alert('Error al eliminar el feedback. Por favor intenta de nuevo.');
-      } else {
-        console.log('Feedback deleted successfully, updating list');
-        // Actualizar la lista localmente
-        setFeedbackList(prevList => prevList.filter(f => f.id !== id));
+        setDeletingId(null); // Resetear inmediatamente en caso de error
+        return;
       }
+      
+      // Actualizar la lista localmente
+      setFeedbackList(prevList => prevList.filter(f => String(f.id) !== feedbackId));
     } catch (error) {
       console.error('Error deleting feedback:', error);
       alert('Error al eliminar el feedback. Por favor intenta de nuevo.');
     } finally {
-      // Siempre resetear el estado, incluso si hay error
-      console.log('Resetting deletingId to null');
-      setDeletingId(null);
-      // Forzar un re-render después de un pequeño delay para asegurar que el estado se actualice
+      // Siempre resetear el estado después de un pequeño delay
       setTimeout(() => {
         setDeletingId(null);
-      }, 100);
+      }, 300);
     }
   };
 
@@ -337,10 +331,10 @@ export default function Dashboard() {
                       </div>
                       <button
                         onClick={() => handleDelete(feedback.id)}
-                        disabled={deletingId === feedback.id || deletingId === String(feedback.id)}
-                        className="text-red-500 hover:text-red-700 transition-colors text-sm disabled:opacity-50"
+                        disabled={deletingId === String(feedback.id)}
+                        className="text-red-500 hover:text-red-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {(deletingId === feedback.id || deletingId === String(feedback.id)) ? 'Eliminando...' : '🗑️'}
+                        {deletingId === String(feedback.id) ? 'Eliminando...' : '🗑️'}
                       </button>
                     </div>
                   </div>

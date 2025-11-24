@@ -190,7 +190,7 @@ export default function Dashboard() {
   };
 
   const handleCopy = () => {
-    const embedCode = `<script src="https://quickfeedback.co/widget.js" data-project-id="${user?.id || ''}"></script>`;
+    const embedCode = `<script src="https://quickfeedback.co/widget.js" data-project-id="${user?.id || ''}"${isProUser ? ' data-pro="true"' : ''}></script>`;
     navigator.clipboard.writeText(embedCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -291,7 +291,7 @@ export default function Dashboard() {
           
           <div className="bg-gray-50 p-4 rounded-lg font-mono text-sm relative">
             <code className="text-purple-600">
-              {`<script src="https://quickfeedback.co/widget.js" data-project-id="${user?.id || ''}"></script>`}
+              {`<script src="https://quickfeedback.co/widget.js" data-project-id="${user?.id || ''}"${isProUser ? ' data-pro="true"' : ''}></script>`}
             </code>
             <button
               onClick={handleCopy}

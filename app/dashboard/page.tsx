@@ -20,28 +20,28 @@ export default function Dashboard() {
   useEffect(() => {
     checkUser();
     
-    // Verificar si volvimos de un pago exitoso
+    // Check if we returned from a successful payment
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === 'true') {
       setShowSuccessMessage(true);
-      // Recargar el estado del usuario después de un pago exitoso
+      // Reload user state after successful payment
       setTimeout(() => {
         checkUser();
-        // Limpiar la URL
+        // Clean URL
         window.history.replaceState({}, '', '/dashboard');
-        // Ocultar mensaje después de 5 segundos
+        // Hide message after 5 seconds
         setTimeout(() => setShowSuccessMessage(false), 5000);
       }, 2000);
     }
   }, []);
 
-  // Limpiar deletingId si se queda atascado (timeout de seguridad)
+  // Clear deletingId if it gets stuck (safety timeout)
   useEffect(() => {
     if (deletingId) {
       const timeout = setTimeout(() => {
         console.warn('DeletingId stuck, resetting...', deletingId);
         setDeletingId(null);
-      }, 5000); // 5 segundos máximo
+      }, 5000); // 5 seconds maximum
 
       return () => clearTimeout(timeout);
     }
@@ -55,7 +55,7 @@ export default function Dashboard() {
     }
     setUser(user);
     
-    // Verificar si es usuario PRO - buscar en tabla users
+    // Check if user is PRO - search in users table
     const { data: userData } = await supabase
       .from('users')
       .select('plan')
@@ -64,7 +64,7 @@ export default function Dashboard() {
     
     setIsProUser(userData?.plan === 'pro');
     
-    // Cargar feedback
+    // Load feedback
     const { data: feedback } = await supabase
       .from('feedback')
       .select('*')
@@ -82,13 +82,13 @@ export default function Dashboard() {
     
     if (!user || !user.email) {
       console.error('User or email missing', { user, hasEmail: !!user?.email });
-      alert('Error: No se pudo obtener la información del usuario. Por favor, recarga la página e intenta de nuevo.');
+      alert('Error: Could not get user information. Please reload the page and try again.');
       return;
     }
 
     if (!user.id) {
       console.error('User ID missing', { user });
-      alert('Error: No se pudo obtener el ID del usuario. Por favor, recarga la página e intenta de nuevo.');
+      alert('Error: Could not get user ID. Please reload the page and try again.');
       return;
     }
 
@@ -125,7 +125,7 @@ export default function Dashboard() {
       } catch (parseError) {
         console.error('Error parsing response:', parseError);
         console.error('Raw response:', responseText);
-        throw new Error(`Error del servidor: ${responseText.substring(0, 200)}`);
+        throw new Error(`Server error: ${responseText.substring(0, 200)}`);
       }
 
       // Si la respuesta no es OK, lanzar error inmediatamente
@@ -138,22 +138,22 @@ export default function Dashboard() {
           errorMsg: errorMsg
         });
         
-        // Mostrar un mensaje más descriptivo
+        // Show a more descriptive message
         let userFriendlyMessage = errorMsg;
         if (response.status === 500) {
-          if (errorMsg.includes('Stripe no está configurado')) {
-            userFriendlyMessage = 'Error: Stripe no está configurado. Por favor contacta al administrador.';
+          if (errorMsg.includes('Stripe no está configurado') || errorMsg.includes('Stripe is not configured')) {
+            userFriendlyMessage = 'Error: Stripe is not configured. Please contact the administrator.';
           } else if (errorMsg.includes('NEXT_PUBLIC_URL')) {
-            userFriendlyMessage = 'Error: Configuración del servidor incompleta. Por favor contacta al administrador.';
+            userFriendlyMessage = 'Error: Incomplete server configuration. Please contact the administrator.';
           } else {
-            userFriendlyMessage = `Error del servidor: ${errorMsg}`;
+            userFriendlyMessage = `Server error: ${errorMsg}`;
           }
         }
         
         throw new Error(userFriendlyMessage);
       }
       
-      // Verificar si hay error en los datos
+      // Check if there's an error in the data
       if (data.error) {
         console.error('Error in response data:', data.error);
         throw new Error(data.error);
@@ -167,17 +167,17 @@ export default function Dashboard() {
         }, 100);
       } else {
         console.error('No URL in response:', data);
-        throw new Error('No se recibió la URL de pago de Stripe. Respuesta: ' + JSON.stringify(data));
+        throw new Error('Stripe payment URL not received. Response: ' + JSON.stringify(data));
       }
     } catch (error) {
-      console.error('Error al procesar el pago:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al procesar el pago';
-      console.error('Error completo:', {
+      console.error('Error processing payment:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error processing payment';
+      console.error('Complete error:', {
         message: errorMessage,
         error: error,
         stack: error instanceof Error ? error.stack : undefined
       });
-      alert(`Error: ${errorMessage}\n\nPor favor, verifica la consola del navegador (F12) para más detalles.`);
+      alert(`Error: ${errorMessage}\n\nPlease check the browser console (F12) for more details.`);
     } finally {
       // Asegurarse de que siempre se resetee el estado de loading
       setLoadingUpgrade(false);
@@ -197,7 +197,7 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este feedback?')) {
+    if (!confirm('Are you sure you want to delete this feedback?')) {
       return;
     }
 
@@ -214,18 +214,18 @@ export default function Dashboard() {
       
       if (error) {
         console.error('Error deleting feedback:', error);
-        alert('Error al eliminar el feedback. Por favor intenta de nuevo.');
-        setDeletingId(null); // Resetear inmediatamente en caso de error
+        alert('Error deleting feedback. Please try again.');
+        setDeletingId(null); // Reset immediately on error
         return;
       }
       
-      // Actualizar la lista localmente
+      // Update list locally
       setFeedbackList(prevList => prevList.filter(f => String(f.id) !== feedbackId));
     } catch (error) {
       console.error('Error deleting feedback:', error);
-      alert('Error al eliminar el feedback. Por favor intenta de nuevo.');
+      alert('Error deleting feedback. Please try again.');
     } finally {
-      // Siempre resetear el estado después de un pequeño delay
+      // Always reset state after a short delay
       setTimeout(() => {
         setDeletingId(null);
       }, 300);
@@ -235,7 +235,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center">
-        <div className="text-purple-600">Cargando...</div>
+        <div className="text-purple-600">Loading...</div>
       </div>
     );
   }
@@ -244,7 +244,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
       {showSuccessMessage && (
         <div className="bg-green-500 text-white px-4 py-3 text-center">
-          <p className="font-semibold">¡Pago exitoso! Tu cuenta ha sido actualizada a PRO. 🎉</p>
+          <p className="font-semibold">Payment successful! Your account has been upgraded to PRO. 🎉</p>
         </div>
       )}
       <nav className="bg-white shadow-sm border-b">
@@ -262,13 +262,13 @@ export default function Dashboard() {
                   disabled={loadingUpgrade}
                   className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200 disabled:opacity-50"
                 >
-                  💳 {loadingUpgrade ? 'Procesando...' : 'Upgrade a PRO (€9/mes)'}
+                  💳 {loadingUpgrade ? 'Processing...' : 'Upgrade to PRO (€9/month)'}
                 </button>
               )}
               
               {isProUser && (
                 <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg font-medium">
-                  ⭐ Usuario PRO
+                  ⭐ PRO User
                 </span>
               )}
               
@@ -277,7 +277,7 @@ export default function Dashboard() {
                 onClick={handleSignOut}
                 className="text-gray-600 hover:text-gray-900 transition-colors"
               >
-                Salir →
+                Sign Out →
               </button>
             </div>
           </div>
@@ -286,8 +286,8 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Tu código de integración</h2>
-          <p className="text-gray-600 mb-4">Copia y pega este código en tu sitio web donde quieras que aparezca el widget:</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Integration Code</h2>
+          <p className="text-gray-600 mb-4">Copy and paste this code into your website where you want the widget to appear:</p>
           
           <div className="bg-gray-50 p-4 rounded-lg font-mono text-sm relative">
             <code className="text-purple-600">
@@ -297,20 +297,20 @@ export default function Dashboard() {
               onClick={handleCopy}
               className="absolute right-4 top-4 px-3 py-1 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-sm"
             >
-              {copied ? '✓ Copiado' : '📋 Copiar'}
+              {copied ? '✓ Copied' : '📋 Copy'}
             </button>
           </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Feedback recibido</h2>
-            <span className="text-sm text-gray-500">{feedbackList.length} respuestas</span>
+            <h2 className="text-2xl font-bold text-gray-900">Received Feedback</h2>
+            <span className="text-sm text-gray-500">{feedbackList.length} {feedbackList.length === 1 ? 'response' : 'responses'}</span>
           </div>
 
           {feedbackList.length === 0 ? (
             <p className="text-center text-gray-500 py-8">
-              No hay feedback todavía. ¡Instala el widget en tu sitio para empezar a recibir opiniones!
+              No feedback yet. Install the widget on your site to start receiving feedback!
             </p>
           ) : (
             <div className="space-y-4">
@@ -318,8 +318,8 @@ export default function Dashboard() {
                 <div key={feedback.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{feedback.name || 'Anónimo'}</h3>
-                      <p className="text-sm text-gray-500">{feedback.email || 'Sin email'}</p>
+                      <h3 className="font-semibold text-gray-900">{feedback.name || 'Anonymous'}</h3>
+                      <p className="text-sm text-gray-500">{feedback.email || 'No email'}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex gap-1">
@@ -334,13 +334,13 @@ export default function Dashboard() {
                         disabled={deletingId === String(feedback.id)}
                         className="text-red-500 hover:text-red-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {deletingId === String(feedback.id) ? 'Eliminando...' : '🗑️'}
+                        {deletingId === String(feedback.id) ? 'Deleting...' : '🗑️'}
                       </button>
                     </div>
                   </div>
                   <p className="text-gray-700">{feedback.message}</p>
                   <p className="text-xs text-gray-400 mt-3">
-                    {new Date(feedback.created_at).toLocaleString('es-ES')}
+                    {new Date(feedback.created_at).toLocaleString('en-US')}
                   </p>
                 </div>
               ))}

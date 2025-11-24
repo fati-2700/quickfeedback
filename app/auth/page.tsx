@@ -84,7 +84,7 @@ export default function AuthPage() {
 
       if (signInError) {
         console.error('Sign in error:', signInError);
-        setError(signInError.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.');
+        setError(signInError.message || 'Error signing in. Please verify your credentials.');
       } else {
         console.log('Sign in successful, redirecting to dashboard');
         // Redirect to dashboard on success
@@ -92,11 +92,11 @@ export default function AuthPage() {
       }
     } catch (err) {
       console.error('Sign in exception:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       if (errorMessage.includes('fetch') || errorMessage.includes('network')) {
-        setError('Error de conexión. Por favor verifica tu conexión a internet y las variables de entorno de Supabase.');
+        setError('Connection error. Please check your internet connection and Supabase environment variables.');
       } else {
-        setError(`Error inesperado: ${errorMessage}`);
+        setError(`Unexpected error: ${errorMessage}`);
       }
     } finally {
       setLoading(false);

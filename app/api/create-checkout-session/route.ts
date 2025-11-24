@@ -18,11 +18,11 @@ function getStripeClient(): Stripe {
 
 export async function POST(request: Request) {
   try {
-    // Validar que Stripe esté configurado
+    // Validate that Stripe is configured
     if (!process.env.STRIPE_SECRET_KEY) {
       console.error('STRIPE_SECRET_KEY is not configured');
       return NextResponse.json(
-        { error: 'Stripe no está configurado correctamente. Verifica que STRIPE_SECRET_KEY esté configurada en Vercel.' },
+        { error: 'Stripe is not configured correctly. Please verify that STRIPE_SECRET_KEY is set in Vercel.' },
         { status: 500 }
       );
     }
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     if (!process.env.NEXT_PUBLIC_URL) {
       console.error('NEXT_PUBLIC_URL is not configured');
       return NextResponse.json(
-        { error: 'NEXT_PUBLIC_URL no está configurado' },
+        { error: 'NEXT_PUBLIC_URL is not configured' },
         { status: 500 }
       );
     }
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     if (!userId || !email) {
       return NextResponse.json(
-        { error: 'userId y email son requeridos' },
+        { error: 'userId and email are required' },
         { status: 400 }
       );
     }
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
             currency: 'eur',
             product_data: {
               name: 'QuickFeedback PRO',
-              description: 'Elimina el branding y obtén funciones premium',
+              description: 'Remove branding and get premium features',
             },
             unit_amount: 900, // €9.00 en centavos
             recurring: {
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     if (!session.url) {
       console.error('Stripe session created but no URL returned');
       return NextResponse.json(
-        { error: 'No se pudo generar la URL de pago. Por favor intenta de nuevo.' },
+        { error: 'Could not generate payment URL. Please try again.' },
         { status: 500 }
       );
     }
@@ -107,12 +107,12 @@ export async function POST(request: Request) {
       raw: error.raw,
     });
     
-    // Mensaje de error más descriptivo
-    let errorMessage = 'Error al procesar el pago';
+    // More descriptive error message
+    let errorMessage = 'Error processing payment';
     if (error.type === 'StripeAuthenticationError') {
-      errorMessage = 'Error de autenticación con Stripe. Verifica que STRIPE_SECRET_KEY esté configurada correctamente.';
+      errorMessage = 'Stripe authentication error. Please verify that STRIPE_SECRET_KEY is configured correctly.';
     } else if (error.type === 'StripeAPIError') {
-      errorMessage = `Error de la API de Stripe: ${error.message}`;
+      errorMessage = `Stripe API error: ${error.message}`;
     } else if (error.message) {
       errorMessage = error.message;
     }

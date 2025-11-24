@@ -185,16 +185,31 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    setDeletingId(id);
-    const { error } = await supabase
-      .from('feedback')
-      .delete()
-      .eq('id', id);
-    
-    if (!error) {
-      setFeedbackList(feedbackList.filter(f => f.id !== id));
+    if (!confirm('¿Estás seguro de que quieres eliminar este feedback?')) {
+      return;
     }
-    setDeletingId(null);
+
+    setDeletingId(id);
+    try {
+      const { error } = await supabase
+        .from('feedback')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting feedback:', error);
+        alert('Error al eliminar el feedback. Por favor intenta de nuevo.');
+      } else {
+        // Actualizar la lista localmente
+        setFeedbackList(feedbackList.filter(f => f.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting feedback:', error);
+      alert('Error al eliminar el feedback. Por favor intenta de nuevo.');
+    } finally {
+      // Siempre resetear el estado, incluso si hay error
+      setDeletingId(null);
+    }
   };
 
   if (loading) {

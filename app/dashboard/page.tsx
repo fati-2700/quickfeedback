@@ -14,28 +14,43 @@ export default function Dashboard() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isProUser, setIsProUser] = useState(false);
   const [loadingUpgrade, setLoadingUpgrade] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     checkUser();
+    
+    // Verificar si volvimos de un pago exitoso
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      setShowSuccessMessage(true);
+      // Recargar el estado del usuario después de un pago exitoso
+      setTimeout(() => {
+        checkUser();
+        // Limpiar la URL
+        window.history.replaceState({}, '', '/dashboard');
+        // Ocultar mensaje después de 5 segundos
+        setTimeout(() => setShowSuccessMessage(false), 5000);
+      }, 2000);
+    }
   }, []);
 
   async function checkUser() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      router.push('/login');
+      router.push('/auth');
       return;
     }
     setUser(user);
     
-    // Verificar si es usuario PRO
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_status')
+    // Verificar si es usuario PRO - buscar en tabla users
+    const { data: userData } = await supabase
+      .from('users')
+      .select('plan')
       .eq('id', user.id)
       .single();
     
-    setIsProUser(profile?.subscription_status === 'pro');
+    setIsProUser(userData?.plan === 'pro');
     
     // Cargar feedback
     const { data: feedback } = await supabase
@@ -51,8 +66,27 @@ export default function Dashboard() {
   }
 
   async function handleUpgrade() {
+    console.log('handleUpgrade called', { user: user?.id, email: user?.email });
+    
+    if (!user || !user.email) {
+      console.error('User or email missing', { user, hasEmail: !!user?.email });
+      alert('Error: No se pudo obtener la información del usuario. Por favor, recarga la página e intenta de nuevo.');
+      return;
+    }
+
+    if (!user.id) {
+      console.error('User ID missing', { user });
+      alert('Error: No se pudo obtener el ID del usuario. Por favor, recarga la página e intenta de nuevo.');
+      return;
+    }
+
     setLoadingUpgrade(true);
     try {
+      console.log('Sending request to /api/create-checkout-session', {
+        userId: user.id,
+        email: user.email
+      });
+
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
@@ -64,15 +98,76 @@ export default function Dashboard() {
         }),
       });
 
-      const { sessionId, url } = await response.json();
+      console.log('Response status:', response.status, response.statusText);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      const responseText = await response.text();
+      console.log('Response text (raw):', responseText);
+      console.log('Response text length:', responseText.length);
+      console.log('Response status:', response.status);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+        console.log('Parsed data:', data);
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
+        console.error('Raw response:', responseText);
+        throw new Error(`Error del servidor: ${responseText.substring(0, 200)}`);
+      }
+
+      // Si la respuesta no es OK, lanzar error inmediatamente
+      if (!response.ok) {
+        const errorMsg = data?.error || data?.message || data?.details || `Error ${response.status}: ${response.statusText}`;
+        console.error('Server error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: data,
+          errorMsg: errorMsg
+        });
+        
+        // Mostrar un mensaje más descriptivo
+        let userFriendlyMessage = errorMsg;
+        if (response.status === 500) {
+          if (errorMsg.includes('Stripe no está configurado')) {
+            userFriendlyMessage = 'Error: Stripe no está configurado. Por favor contacta al administrador.';
+          } else if (errorMsg.includes('NEXT_PUBLIC_URL')) {
+            userFriendlyMessage = 'Error: Configuración del servidor incompleta. Por favor contacta al administrador.';
+          } else {
+            userFriendlyMessage = `Error del servidor: ${errorMsg}`;
+          }
+        }
+        
+        throw new Error(userFriendlyMessage);
+      }
       
-      if (url) {
-        window.location.href = url;
+      // Verificar si hay error en los datos
+      if (data.error) {
+        console.error('Error in response data:', data.error);
+        throw new Error(data.error);
+      }
+      
+      if (data.url) {
+        console.log('Redirecting to Stripe:', data.url);
+        // Asegurarse de que el redirect funcione
+        setTimeout(() => {
+          window.location.href = data.url;
+        }, 100);
+      } else {
+        console.error('No URL in response:', data);
+        throw new Error('No se recibió la URL de pago de Stripe. Respuesta: ' + JSON.stringify(data));
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error al procesar el pago. Por favor intenta de nuevo.');
+      console.error('Error al procesar el pago:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al procesar el pago';
+      console.error('Error completo:', {
+        message: errorMessage,
+        error: error,
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      alert(`Error: ${errorMessage}\n\nPor favor, verifica la consola del navegador (F12) para más detalles.`);
     } finally {
+      // Asegurarse de que siempre se resetee el estado de loading
       setLoadingUpgrade(false);
     }
   }
@@ -112,6 +207,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
+      {showSuccessMessage && (
+        <div className="bg-green-500 text-white px-4 py-3 text-center">
+          <p className="font-semibold">¡Pago exitoso! Tu cuenta ha sido actualizada a PRO. 🎉</p>
+        </div>
+      )}
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">

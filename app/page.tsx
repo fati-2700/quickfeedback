@@ -258,7 +258,7 @@ export default function Home() {
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
             <p className="text-xl text-gray-600">Choose the plan that works for you</p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             {/* Free Plan */}
             <div className="p-8 rounded-2xl border-2 border-gray-200 hover:border-blue-300 transition-all">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
@@ -298,9 +298,17 @@ export default function Home() {
                 POPULAR
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
-              <div className="mb-6">
+              <div className="mb-4">
                 <span className="text-4xl font-bold text-gray-900">$10</span>
                 <span className="text-gray-600">/month</span>
+              </div>
+              <div className="mb-6 p-3 bg-green-100 border border-green-300 rounded-lg">
+                <p className="text-sm font-semibold text-green-800">
+                  🎉 Launch Special: 50% off first month!
+                </p>
+                <p className="text-xs text-green-700 mt-1">
+                  Use code <span className="font-mono font-bold">LAUNCH50</span> - Pay only $5 for your first month
+                </p>
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start">
@@ -329,33 +337,52 @@ export default function Home() {
                 Upgrade to Pro
               </a>
             </div>
+
+            {/* Lifetime Deal */}
+            {(process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK ||
+              process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK) && (
+              <div className="p-8 rounded-2xl border-2 border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 hover:shadow-xl transition-all relative">
+                <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                  BEST VALUE
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Lifetime</h3>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-gray-900">$49</span>
+                  <span className="text-gray-600"> one-time</span>
+                </div>
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span className="text-gray-600">Everything in Pro</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span className="text-gray-600">Lifetime access</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span className="text-gray-600">No recurring fees</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span className="text-gray-600">Future features included</span>
+                  </li>
+                </ul>
+                <a
+                  href={
+                    process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK ||
+                    process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK ||
+                    '#'
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
+                >
+                  🔒 Claim Lifetime Access
+                </a>
+              </div>
+            )}
           </div>
-          {(process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK ||
-            process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK) && (
-            <div className="mt-8 p-6 rounded-2xl border border-purple-200 bg-purple-50 text-center">
-              <p className="text-sm uppercase tracking-widest text-purple-600 font-semibold mb-2">
-                Secret Launch Offer
-              </p>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Lifetime Deal – $49
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Pay once and enjoy QuickFeedback forever. Limited availability.
-              </p>
-              <a
-                href={
-                  process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK ||
-                  process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK ||
-                  '#'
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-6 py-3 bg-white text-purple-700 border border-purple-300 rounded-lg font-semibold hover:bg-purple-100 transition-colors"
-              >
-                🔒 Claim Lifetime Access
-              </a>
-            </div>
-          )}
         </div>
       </section>
 

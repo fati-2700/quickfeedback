@@ -212,7 +212,7 @@ export default function Home() {
             <div className="p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all">
               <div className="text-4xl mb-4">💰</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Affordable</h3>
-              <p className="text-gray-600">Free forever for basic features, or upgrade to Pro for just €9/month for advanced features.</p>
+              <p className="text-gray-600">Free forever for basic features, or upgrade to Pro for just $10/month for advanced features.</p>
             </div>
           </div>
         </div>
@@ -263,7 +263,7 @@ export default function Home() {
             <div className="p-8 rounded-2xl border-2 border-gray-200 hover:border-blue-300 transition-all">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">€0</span>
+                <span className="text-4xl font-bold text-gray-900">$0</span>
                 <span className="text-gray-600">/month</span>
               </div>
               <ul className="space-y-4 mb-8">
@@ -299,7 +299,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">€9</span>
+                <span className="text-4xl font-bold text-gray-900">$10</span>
                 <span className="text-gray-600">/month</span>
               </div>
               <ul className="space-y-4 mb-8">
@@ -321,7 +321,7 @@ export default function Home() {
                 </li>
               </ul>
               <a
-                href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || '#'}
+                href="/auth"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
@@ -330,6 +330,32 @@ export default function Home() {
               </a>
             </div>
           </div>
+          {(process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK ||
+            process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK) && (
+            <div className="mt-8 p-6 rounded-2xl border border-purple-200 bg-purple-50 text-center">
+              <p className="text-sm uppercase tracking-widest text-purple-600 font-semibold mb-2">
+                Secret Launch Offer
+              </p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Lifetime Deal – $49
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Pay once and enjoy QuickFeedback forever. Limited availability.
+              </p>
+              <a
+                href={
+                  process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK ||
+                  process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK ||
+                  '#'
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-6 py-3 bg-white text-purple-700 border border-purple-300 rounded-lg font-semibold hover:bg-purple-100 transition-colors"
+              >
+                🔒 Claim Lifetime Access
+              </a>
+            </div>
+          )}
         </div>
       </section>
 

@@ -18,7 +18,6 @@ function getStripeClient(): Stripe {
 
 export async function POST(request: Request) {
   try {
-    // Validate that Stripe is configured
     if (!process.env.STRIPE_SECRET_KEY) {
       console.error('STRIPE_SECRET_KEY is not configured');
       return NextResponse.json(
@@ -35,7 +34,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const { userId, email } = await request.json();
+    const body = await request.json();
+    const {
+      userId,
+      email,
+      planType = 'pro-monthly',
+      couponCode,
+    }: {
+      userId: string;
+      email: string;
+      planType?: 'pro-monthly' | 'lifetime';
+      couponCode?: string;
+    } = body;
 
     if (!userId || !email) {
       return NextResponse.json(
@@ -44,40 +54,71 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('Creating Stripe checkout session', {
+    const normalizedPlan = planType === 'lifetime' ? 'lifetime' : 'pro-monthly';
+    const successUrl = `${process.env.NEXT_PUBLIC_URL}/dashboard?success=true`;
+    const cancelUrl = `${process.env.NEXT_PUBLIC_URL}/dashboard`;
+    const metadata: Record<string, string> = {
       userId,
-      email,
-      success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/dashboard`,
-    });
+      planType: normalizedPlan,
+    };
 
     const stripeClient = getStripeClient();
-    const session = await stripeClient.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
-      line_items: [
+      customer_email: email,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata,
+    };
+
+    if (normalizedPlan === 'lifetime') {
+      sessionParams.mode = 'payment';
+      sessionParams.line_items = [
         {
           price_data: {
-            currency: 'eur',
+            currency: 'usd',
+            product_data: {
+              name: 'QuickFeedback Lifetime Deal',
+              description: 'One-time payment for lifetime access',
+            },
+            unit_amount: 4900,
+          },
+          quantity: 1,
+        },
+      ];
+    } else {
+      sessionParams.mode = 'subscription';
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: 'usd',
             product_data: {
               name: 'QuickFeedback PRO',
-              description: 'Remove branding and get premium features',
+              description: 'Monthly subscription with premium features',
             },
-            unit_amount: 900, // €9.00 en centavos
+            unit_amount: 1000,
             recurring: {
               interval: 'month',
             },
           },
           quantity: 1,
         },
-      ],
-      mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/dashboard`,
-      customer_email: email,
-      metadata: {
-        userId,
-      },
-    });
+      ];
+
+      const launchCouponCode =
+        (process.env.NEXT_PUBLIC_LAUNCH_COUPON_CODE || 'LAUNCH50').toUpperCase();
+      const launchCouponId = process.env.STRIPE_LAUNCH_COUPON_ID;
+      if (
+        couponCode &&
+        launchCouponId &&
+        couponCode.trim().toUpperCase() === launchCouponCode
+      ) {
+        sessionParams.discounts = [{ coupon: launchCouponId }];
+        metadata.couponCode = couponCode.trim();
+      }
+    }
+
+    const session = await stripeClient.checkout.sessions.create(sessionParams);
 
     console.log('Stripe session created:', {
       sessionId: session.id,
@@ -88,14 +129,14 @@ export async function POST(request: Request) {
     if (!session.url) {
       console.error('Stripe session created but no URL returned');
       return NextResponse.json(
-        { error: 'Could not generate payment URL. Please try again.' },
+        { error: 'Could not generate the payment URL. Please try again.' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       sessionId: session.id,
-      url: session.url 
+      url: session.url,
     });
   } catch (error: any) {
     console.error('Stripe error:', error);
@@ -106,21 +147,21 @@ export async function POST(request: Request) {
       statusCode: error.statusCode,
       raw: error.raw,
     });
-    
-    // More descriptive error message
+
     let errorMessage = 'Error processing payment';
     if (error.type === 'StripeAuthenticationError') {
-      errorMessage = 'Stripe authentication error. Please verify that STRIPE_SECRET_KEY is configured correctly.';
+      errorMessage =
+        'Stripe authentication error. Please verify that STRIPE_SECRET_KEY is configured correctly.';
     } else if (error.type === 'StripeAPIError') {
       errorMessage = `Stripe API error: ${error.message}`;
     } else if (error.message) {
       errorMessage = error.message;
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: errorMessage,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       },
       { status: 500 }
     );

@@ -15,7 +15,7 @@
 | # | Punto | Estado | Notas |
 |---|-------|--------|-------|
 | 2.1 | **¿Autenticación Funcional?** | ✅ **SÍ** | Sign-up y sign-in funcionan con Supabase Auth. Usuarios se crean en tabla `users` con `plan: 'free'` por defecto. |
-| 2.2 | **¿Integración con Pagos (Stripe)?** | ✅ **SÍ** | Botón "Upgrade to PRO" crea checkout session en Stripe (€9/mes). Redirige a Stripe y vuelve a `/dashboard?success=true`. |
+| 2.2 | **¿Integración con Pagos (Stripe)?** | ✅ **SÍ** | Botón "Upgrade to PRO" crea checkout session en Stripe ($10/mes). Redirige a Stripe y vuelve a `/dashboard?success=true`. |
 | 2.3 | **¿El Estado PRO Funciona?** | ✅ **SÍ** (Corregido) | Webhook de Stripe actualiza `users.plan = 'pro'` cuando se completa el pago. El código de embed ahora incluye `data-pro="true"` para usuarios PRO, ocultando el branding. |
 
 ### 3. Distribución y Landing Page
@@ -63,4 +63,5 @@
 **Todos los puntos están ✅ COMPLETADOS y FUNCIONALES**
 
 El MVP está listo para lanzamiento. Todas las funcionalidades críticas están implementadas y funcionando correctamente.
+
 

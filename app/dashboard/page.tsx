@@ -13,9 +13,16 @@ export default function Dashboard() {
   const [copied, setCopied] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isProUser, setIsProUser] = useState(false);
+  const [userPlan, setUserPlan] = useState<string | null>(null);
   const [loadingUpgrade, setLoadingUpgrade] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
   const router = useRouter();
+  const lifetimeOfferLink =
+    process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK ||
+    process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK ||
+    '';
+  const promoCodeName = process.env.NEXT_PUBLIC_LAUNCH_COUPON_CODE || 'LAUNCH50';
 
   useEffect(() => {
     checkUser();
@@ -62,7 +69,9 @@ export default function Dashboard() {
       .eq('id', user.id)
       .single();
     
-    setIsProUser(userData?.plan === 'pro');
+    const planValue = typeof userData?.plan === 'string' ? userData?.plan : 'free';
+    setUserPlan(planValue);
+    setIsProUser(planValue === 'pro' || planValue === 'lifetime');
     
     // Load feedback
     const { data: feedback } = await supabase
@@ -77,7 +86,7 @@ export default function Dashboard() {
     setLoading(false);
   }
 
-  async function handleUpgrade() {
+  async function handleUpgrade(planType: 'pro-monthly' | 'lifetime' = 'pro-monthly') {
     console.log('handleUpgrade called', { user: user?.id, email: user?.email });
     
     if (!user || !user.email) {
@@ -107,6 +116,11 @@ export default function Dashboard() {
         body: JSON.stringify({
           userId: user.id,
           email: user.email,
+          planType,
+          couponCode:
+            planType === 'pro-monthly' && promoCode.trim()
+              ? promoCode.trim()
+              : undefined,
         }),
       });
 
@@ -256,19 +270,9 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center gap-4">
-              {!isProUser && (
-                <button
-                  onClick={handleUpgrade}
-                  disabled={loadingUpgrade}
-                  className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200 disabled:opacity-50"
-                >
-                  💳 {loadingUpgrade ? 'Processing...' : 'Upgrade to PRO (€9/month)'}
-                </button>
-              )}
-              
               {isProUser && (
                 <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg font-medium">
-                  ⭐ PRO User
+                  ⭐ {userPlan === 'lifetime' ? 'Lifetime' : 'PRO'} User
                 </span>
               )}
               
@@ -285,6 +289,56 @@ export default function Dashboard() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {!isProUser && (
+          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Upgrade Your Plan</h2>
+            <p className="text-gray-600">
+              Unlock unlimited feedback, remove branding, and access premium features for only $10/month.
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto]">
+              <div className="flex flex-col">
+                <label className="text-sm font-semibold text-gray-700 mb-2">
+                  Promo Code
+                </label>
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  placeholder={`Enter promo code (${promoCodeName})`}
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition-all"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Use code {promoCodeName} to get 50% off your first month.
+                </p>
+              </div>
+              <button
+                onClick={() => handleUpgrade('pro-monthly')}
+                disabled={loadingUpgrade}
+                className="h-fit px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+              >
+                {loadingUpgrade ? 'Processing...' : 'Upgrade to PRO ($10/month)'}
+              </button>
+            </div>
+
+            {lifetimeOfferLink && (
+              <div className="mt-8 p-4 border border-purple-200 rounded-xl bg-purple-50">
+                <h3 className="text-lg font-semibold text-purple-900 mb-1">Secret Launch Offer</h3>
+                <p className="text-sm text-purple-800 mb-3">
+                  Get lifetime access to QuickFeedback for a one-time payment of $49.
+                </p>
+                <a
+                  href={lifetimeOfferLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-5 py-2 bg-white text-purple-700 border border-purple-300 rounded-lg font-semibold hover:bg-purple-100 transition-colors"
+                >
+                  🔒 Claim Lifetime Deal ($49)
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Integration Code</h2>
           <p className="text-gray-600 mb-4">Copy and paste this code into your website where you want the widget to appear:</p>
